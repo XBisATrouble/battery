@@ -1,23 +1,31 @@
 package com.bupt.battery.service.impl;
 
 import com.bupt.battery.entity.PortDO;
+import com.bupt.battery.repository.IPortDOPageRepository;
 import com.bupt.battery.repository.IPortDORepository;
 import com.bupt.battery.service.IPortDOService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PortDOServiceImpl extends BaseServiceImpl<PortDO,Long> implements IPortDOService {
-    @Autowired
-    private IPortDORepository portDORepository;
+    private final IPortDORepository portDORepository;
+    private final IPortDOPageRepository portDOPageRepository;
 
-    @Override
-    public PortDO findByName(String portName) {
-        return portDORepository.findPortDOByPortName(portName);
+    public PortDOServiceImpl(IPortDOPageRepository portDOPageRepository, IPortDORepository portDORepository) {
+        this.portDOPageRepository = portDOPageRepository;
+        this.portDORepository = portDORepository;
     }
 
     @Override
     public PortDO findByNameAndStatus(String portName, Integer status) {
         return portDORepository.findPortDOByPortNameAndAndStatus(portName,status);
+    }
+
+    @Override
+    public Page<PortDO> findPortPage(Pageable pageable) {
+        return portDOPageRepository.findAll(pageable);
     }
 }
