@@ -5,7 +5,6 @@ import com.bupt.battery.entity.PortDO;
 import com.bupt.battery.form.PortForm;
 import com.bupt.battery.form.PortQueryForm;
 import com.bupt.battery.service.IPortDOService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,6 +41,7 @@ public class PortController {
     @RequestMapping(path = "/create")
     public PortDO createPort(@RequestBody PortForm form)
     {
+        // TODO 重复代码
         PortDO portDO = new PortDO();
         portDO.setIp(form.getIp());
         portDO.setPortDescription(form.getPortDescription());
