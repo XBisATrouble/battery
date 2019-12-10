@@ -30,4 +30,9 @@ public class PortDOServiceImpl extends BaseServiceImpl<PortDO,Long> implements I
     public Page<PortDO> findPortPage(Pageable pageable) {
         return portDOPageRepository.findAll(pageable);
     }
+
+    @Override
+    public List<PortDO> findByStatus(Integer status) {
+        return portDORepository.findPortDOSByStatus(status);
+    }
 }

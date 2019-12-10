@@ -28,6 +28,9 @@ public class PortController {
     @RequestMapping(path = "/get")
     public List<PortDO> getPort(@RequestBody PortQueryForm form)
     {
+        if (form.getPortName().equals("")) {
+            return portDOService.findByStatus(form.getStatus());
+        }
         return portDOService.findByNameAndStatus(form.getPortName(),form.getStatus());
     }
 
