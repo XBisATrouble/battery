@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PortDOServiceImpl extends BaseServiceImpl<PortDO,Long> implements IPortDOService {
     private final IPortDORepository portDORepository;
@@ -20,12 +22,17 @@ public class PortDOServiceImpl extends BaseServiceImpl<PortDO,Long> implements I
     }
 
     @Override
-    public PortDO findByNameAndStatus(String portName, Integer status) {
+    public List<PortDO> findByNameAndStatus(String portName, Integer status) {
         return portDORepository.findPortDOByPortNameAndAndStatus(portName,status);
     }
 
     @Override
     public Page<PortDO> findPortPage(Pageable pageable) {
         return portDOPageRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<PortDO> findByStatus(Integer status) {
+        return portDORepository.findPortDOSByStatus(status);
     }
 }
