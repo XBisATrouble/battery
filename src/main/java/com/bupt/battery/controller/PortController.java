@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping(path = "/api/port",method = RequestMethod.POST,produces = "application/json; charset=UTF-8",consumes="application/json")
@@ -22,9 +24,9 @@ public class PortController {
         this.portDOService = portDOService;
     }
 
-    // 获取单个port
+    // 获取port
     @RequestMapping(path = "/get")
-    public PortDO getPort(@RequestBody PortQueryForm form)
+    public List<PortDO> getPort(@RequestBody PortQueryForm form)
     {
         return portDOService.findByNameAndStatus(form.getPortName(),form.getStatus());
     }

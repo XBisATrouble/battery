@@ -9,6 +9,6 @@ import javax.sound.sampled.Port;
 import java.util.List;
 
 public interface IPortDOService extends BaseService<PortDO,Long> {
-    PortDO findByNameAndStatus(String portName,Integer status);
+    List<PortDO> findByNameAndStatus(String portName,Integer status);
     Page<PortDO> findPortPage(Pageable pageable);
 }
