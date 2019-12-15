@@ -12,6 +12,8 @@ public class GranularityForm implements Serializable {
     private Integer pageNum;
     private Integer pageSize;
     private Integer vehicleId;
+    private String vin;
+    private String plateNumber;
     private String carmaker;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -22,4 +24,5 @@ public class GranularityForm implements Serializable {
     private String time;
     private String area;
     private String type;
+
 }
