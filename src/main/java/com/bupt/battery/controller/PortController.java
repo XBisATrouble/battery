@@ -37,14 +37,21 @@ public class PortController {
         return portDOService.findByNameAndStatus(form.getPortName(),form.getStatus());
     }
 
-    // 获取所有port切分页
+    // 获取port
     @RequestMapping(path = "/list")
-    public Page<PortDO> getPortPage(@RequestBody PortQueryForm form)
+    public List<PortDO> getAllPort()
     {
-        // 实例化Page查询参数
-        PageRequest pr = new PageRequest(form.getPageNum(),form.getPageSize());
-        return portDOService.findPortPage(pr);
+        return portDOService.findAll();
     }
+
+//    // 获取所有port切分页
+//    @RequestMapping(path = "/list")
+//    public Page<PortDO> getPortPage(@RequestBody PortQueryForm form)
+//    {
+//        // 实例化Page查询参数
+//        PageRequest pr = new PageRequest(form.getPageNum(),form.getPageSize());
+//        return portDOService.findPortPage(pr);
+//    }
 
     @RequestMapping(path = "/create")
     public PortDO createPort(@RequestBody PortForm form)
