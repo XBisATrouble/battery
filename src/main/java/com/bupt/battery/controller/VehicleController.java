@@ -84,7 +84,6 @@ public class VehicleController {
     @RequestMapping(path = "/getVehicle")
     public VehicleDO getVehicle(@RequestBody VehicleSaveForm form)
     {
-        System.out.println(form.getId());
         VehicleDO vehicleDO=vehicleDOService.getOne(form.getId());
         vehicleDO.setGroupMode(vehicleDO.getGroupMode().substring(vehicleDO.getGroupMode().indexOf("_")+1));
         vehicleDO.setVehicleVersion(vehicleDO.getVehicleVersion().substring(vehicleDO.getVehicleVersion().indexOf("_")+1));

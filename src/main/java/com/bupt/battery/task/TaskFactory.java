@@ -14,4 +14,14 @@ public class TaskFactory {
             return null;
         }
     }
+    public BaseMonitor getMonitor(String name) {
+        System.out.println(name+"-------name");
+        try {
+            Class<?> factoryClass = Class.forName(name);
+            return (BaseMonitor) factoryClass.newInstance();
+        }catch (Exception e)
+        {
+            return null;
+        }
+    }
 }
