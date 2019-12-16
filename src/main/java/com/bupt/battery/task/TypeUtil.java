@@ -3,7 +3,9 @@ package com.bupt.battery.task;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bupt.battery.Enum.StatusType;
+import com.bupt.battery.config.WebSocket;
 import com.bupt.battery.entity.TaskDO;
+import com.bupt.battery.form.ThreadForm;
 import com.bupt.battery.service.ITaskDOService;
 import com.bupt.battery.util.SpringUtil;
 import java.io.IOException;
@@ -11,17 +13,25 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TypeUtil {
-    public static void run(TaskDO taskDO,String request,String url){
+    @Autowired
+    private static WebSocket webSocket;
+
+    public static void run(ThreadForm form){
+//        System.out.println(form);
+//        webSocket.sendTextMessage(form.getShopId(),form.getTaskDO().getTaskName()+"任务执行完毕");
         try {
             System.out.println("start");
-
+            TaskDO taskDO=form.getTaskDO();
             String[] args1 = new String[] {
                 "python",
                 //                "/home/python/tmat.py",
-                url,
-                request
+                form.getUrl(),
+                form.getTaskRequest()
             };
             Process pr = Runtime.getRuntime().exec(args1);
             InputStreamReader ir = new InputStreamReader(pr.getInputStream(), StandardCharsets.UTF_8);
@@ -42,7 +52,7 @@ public class TypeUtil {
                 if(StringUtils.isNotBlank(resultJson.get("picurl").toString()))
                 {
                     System.out.println(resultJson.get("picurl"));
-                    taskDO.setPicResult("http://10.103.244.129/"+resultJson.get("picurl"));
+                    taskDO.setPicResult(""+resultJson.get("picurl"));
 
                 }
                 else {
@@ -50,7 +60,7 @@ public class TypeUtil {
                 }
                 if(StringUtils.isNotBlank(resultJson.get("csvurl").toString()))
                 {
-                    taskDO.setCsvResult("http://10.103.244.129/home/csv/"+resultJson.get("csvurl"));
+                    taskDO.setCsvResult(""+resultJson.get("csvurl"));
                 }else {
                     taskDO.setCsvResult("");
                 }
@@ -66,15 +76,26 @@ public class TypeUtil {
             else {
                 taskDO.setStatus(StatusType.Fail.getName());
 //                taskDO.setResultType(0);
-
-                taskDO.setReason(resultJson.getString("message")!=null?resultJson.getString("message"):"数据为空");
+                if(resultJson!=null)
+                {
+                    taskDO.setReason(resultJson.getString("message")!=null?resultJson.getString("message"):"数据为空");
+                }
+                else {
+                    taskDO.setReason("系统异常，请联系管理员!");
+                }
 //                taskDO.setResult("失败");
             }
             SpringUtil.getBean(ITaskDOService.class).update(taskDO);
-            System.out.println(request);
+            WebSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
+
         }catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            TaskDO taskDO=form.getTaskDO();
+            taskDO.setStatus(StatusType.Fail.getName());
+            //                taskDO.setResultType(0);
+            taskDO.setReason("系统异常，请联系管理员!");
         }
+
     }
 
 }

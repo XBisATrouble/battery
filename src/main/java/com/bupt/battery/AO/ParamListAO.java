@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class ParamListAO implements Serializable {
     String taskName;
     String taskType;
-
+    Integer expired;
     String vehicleId;
 
 //    @DateTimeFormat(pattern = "yyyy-MM-dd")

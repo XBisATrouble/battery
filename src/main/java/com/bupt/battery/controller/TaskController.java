@@ -10,25 +10,40 @@ import com.bupt.battery.entity.TaskDO;
 import com.bupt.battery.entity.TaskTypeDO;
 import com.bupt.battery.form.TaskQueryForm;
 import com.bupt.battery.form.TaskSaveForm;
+import com.bupt.battery.form.ThreadForm;
 import com.bupt.battery.service.ITaskDOService;
 import com.bupt.battery.service.ITaskTypeDOService;
 import com.bupt.battery.task.TaskThread;
 import com.bupt.battery.task.TaskThreadPoolExecutor;
 import com.bupt.battery.util.EnumUtil;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import javafx.concurrent.Task;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 //@CrossOrigin
 @RestController
-@RequestMapping(path = "/api/task",method = RequestMethod.POST,produces = "application/json; charset=UTF-8",consumes="application/json")
+@RequestMapping(path = "/api/task",method = RequestMethod.POST,produces = "application/json; charset=UTF-8")
 public class TaskController {
 //    private static Logger logger= LoggerFactory.getLogger(TaskController.class);
     @Autowired
@@ -39,6 +54,12 @@ public class TaskController {
     private TaskThreadPoolExecutor pool;
     @Autowired
     private WebSocket webSocket;
+    @Value("${picFile.url}")
+    private String picFile;
+    @Value("${csvFile.url}")
+    private String csvFile;
+    @Value("${host}")
+    private String host;
 //    @RequestParam TaskQueryForm form
     @RequestMapping(value = "/list",consumes = "application/json")
     public Page<TaskDO> queryTaskList(@RequestBody TaskQueryForm form)
@@ -60,7 +81,10 @@ public class TaskController {
     @RequestMapping(value = "/watch")
     public TaskDO getTaskDO(@RequestBody TaskQueryForm form)
     {
-        return taskDOService.getOne(form.getTaskId());
+        TaskDO taskDO=taskDOService.getOne(form.getTaskId());
+        taskDO.setPicResult(host+taskDO.getPicResult());
+        System.out.println(taskDO);
+        return taskDO;
     }
     @RequestMapping(value = "/param")
     public ParamListAO getParams(@RequestBody TaskQueryForm form)
@@ -73,6 +97,7 @@ public class TaskController {
 //        paramAO.setEndTime(taskDO.getEndTime());
         paramAO.setTaskName(taskDO.getTaskName());
         paramAO.setTaskType(taskTypeDO.getType());
+        paramAO.setExpired(taskDO.getExpired());
         List<ParamAO> paramAOList=new ArrayList<>();
         if (StringUtils.isBlank(taskDO.getParamValue())||StringUtils.isBlank(taskTypeDO.getParamName())||StringUtils.isBlank(taskTypeDO.getParamType()))
         {
@@ -109,10 +134,15 @@ public class TaskController {
         TaskTypeDO taskTypeDO=taskTypeDOService.getOne(taskDO.getType());
 
         String taskRequest=getTaskRequest(taskDO,taskTypeDO.getParamNameCode());
-
-        String name=EnumUtil.getTaskType(taskDO.getType().intValue()).name();
-
-        TaskThread taskThread=new TaskThread(taskDO,name,taskRequest);
+        TaskType taskType=EnumUtil.getTaskType(taskDO.getType().intValue());
+        String name=taskType.name();
+        ThreadForm threadForm=new ThreadForm();
+        threadForm.setName(name);
+        threadForm.setShopId(form.getShopId());
+        threadForm.setTaskDO(taskDO);
+        threadForm.setTaskRequest(taskRequest);
+        threadForm.setUrl(taskType.getUrl());
+        TaskThread taskThread=new TaskThread(threadForm);
 
         taskDO.setStatus(StatusType.Process.getName());
         taskDOService.update(taskDO);
@@ -148,6 +178,7 @@ public class TaskController {
     {
         System.out.println(form);
         String vehicles=null;
+//        TaskType taskType=TaskType.valueOf(form.getTaskType());
         for(int i=0;i<form.getParamAOList().size();i++)
         {
             if(form.getParamAOList().get(i).getParamName().equals("车号"))
@@ -191,7 +222,13 @@ public class TaskController {
 
                 String taskRequest=getTaskRequest(taskDO,taskTypeDO.getParamNameCode());
                 String name=EnumUtil.getTaskType(taskDO.getType().intValue()).name();
-                TaskThread taskThread=new TaskThread(taskDO,name,taskRequest);
+                ThreadForm threadForm=new ThreadForm();
+                threadForm.setName(name);
+                threadForm.setShopId(form.getShopId());
+                threadForm.setTaskDO(taskDO);
+                threadForm.setUrl(taskType.getUrl());
+                threadForm.setTaskRequest(taskRequest);
+                TaskThread taskThread=new TaskThread(threadForm);
                 taskDO.setStatus(StatusType.Process.getName());
                 taskDOService.update(taskDO);
                 pool.execute(taskThread);
@@ -220,7 +257,13 @@ public class TaskController {
 
             String taskRequest=getTaskRequest(taskDO,taskTypeDO.getParamNameCode());
             String name=EnumUtil.getTaskType(taskDO.getType().intValue()).name();
-            TaskThread taskThread=new TaskThread(taskDO,name,taskRequest);
+            ThreadForm threadForm=new ThreadForm();
+            threadForm.setName(name);
+            threadForm.setShopId(form.getShopId());
+            threadForm.setTaskDO(taskDO);
+            threadForm.setTaskRequest(taskRequest);
+            threadForm.setUrl(taskType.getUrl());
+            TaskThread taskThread=new TaskThread(threadForm);
             taskDO.setStatus(StatusType.Process.getName());
             taskDOService.update(taskDO);
             pool.execute(taskThread);
@@ -233,7 +276,56 @@ public class TaskController {
     {
         taskDOService.delete(form.getTaskId());
     }
+    @GetMapping(value="/download")
+    public void download(@RequestParam String type,@RequestParam Long taskId, HttpServletResponse resp) throws IOException
+    {
+        TaskDO taskDO=taskDOService.getOne(taskId);
+        String path = null;
+        String name=null;
+        if (type.equals("csv"))
+        {
+            name=taskDO.getCsvResult();
+            path=csvFile+name;
+        }
+        else {
+            name=taskDO.getPicResult();
+            path=picFile+name;
+        }
+//        path="F:\\版本号.png";
+        //String realPath = "D:" + File.separator + "apache-tomcat-8.5.15" + File.separator + "files";
+        File file = new File(path);
+        System.out.println(path);
+        if(!file.exists()){
+            throw new IOException("文件不存在");
+        }
+//        resp.reset();
+        resp.setContentType("application/octet-stream");
+//        resp.setContentType("application/x-png");
+        resp.setCharacterEncoding("utf-8");
+        resp.setContentLength((int) file.length());
+        resp.addHeader("Content-Disposition", "attachment;filename=" + name);
+        byte[] buff = new byte[1024];
+        BufferedInputStream bis = null;
+        OutputStream os = null;
+        try {
+            os = resp.getOutputStream();
+            bis = new BufferedInputStream(new FileInputStream(file));
+            int i = 0;
+            while ((i = bis.read(buff)) != -1) {
+                os.write(buff, 0, i);
+                os.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                bis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
+    }
     private String getTaskRequest(TaskDO taskDO,String paramName)
     {
         JSONObject jsonObject=new JSONObject();

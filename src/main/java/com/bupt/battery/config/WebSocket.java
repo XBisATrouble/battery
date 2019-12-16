@@ -61,7 +61,7 @@ public class WebSocket {
         if (session != null) {
             try {
                 System.out.println("---"+shopId+"--"+message);
-                session.getBasicRemote().sendText(message);
+                session.getBasicRemote().sendText(shopId+message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
