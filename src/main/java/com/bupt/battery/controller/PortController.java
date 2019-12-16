@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping(path = "/api/port",method = RequestMethod.POST,produces = "application/json; charset=UTF-8",consumes="application/json")
@@ -22,21 +24,34 @@ public class PortController {
         this.portDOService = portDOService;
     }
 
-    // 获取单个port
+    // 获取port
     @RequestMapping(path = "/get")
-    public PortDO getPort(@RequestBody PortQueryForm form)
+    public List<PortDO> getPort(@RequestBody PortQueryForm form)
     {
+        if (form.getPortName().equals("") && form.getStatus().equals(-1)) {
+            return portDOService.findAll();
+        }
+        if (form.getPortName().equals("")) {
+            return portDOService.findByStatus(form.getStatus());
+        }
         return portDOService.findByNameAndStatus(form.getPortName(),form.getStatus());
     }
 
-    // 获取所有port切分页
+    // 获取port
     @RequestMapping(path = "/list")
-    public Page<PortDO> getPortPage(@RequestBody PortQueryForm form)
+    public List<PortDO> getAllPort()
     {
-        // 实例化Page查询参数
-        PageRequest pr = new PageRequest(form.getPageNum(),form.getPageSize());
-        return portDOService.findPortPage(pr);
+        return portDOService.findAll();
     }
+
+//    // 获取所有port切分页
+//    @RequestMapping(path = "/list")
+//    public Page<PortDO> getPortPage(@RequestBody PortQueryForm form)
+//    {
+//        // 实例化Page查询参数
+//        PageRequest pr = new PageRequest(form.getPageNum(),form.getPageSize());
+//        return portDOService.findPortPage(pr);
+//    }
 
     @RequestMapping(path = "/create")
     public PortDO createPort(@RequestBody PortForm form)
