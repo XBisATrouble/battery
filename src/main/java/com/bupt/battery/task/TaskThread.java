@@ -4,7 +4,9 @@ import com.bupt.battery.entity.TaskDO;
 import com.bupt.battery.form.ThreadForm;
 import com.bupt.battery.request.TaskRequest;
 import com.bupt.battery.util.SpringUtil;
-import javafx.concurrent.Task;
+
+//import javafx.concurrent.Task;
+
 
 public class TaskThread implements Runnable {
     private ThreadForm form;

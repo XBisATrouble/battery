@@ -19,9 +19,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class TypeUtil {
     @Autowired
-    private WebSocket webSocket;
+    private static WebSocket webSocket;
 
-    public void run(ThreadForm form){
+    public static void run(ThreadForm form){
 //        System.out.println(form);
 //        webSocket.sendTextMessage(form.getShopId(),form.getTaskDO().getTaskName()+"任务执行完毕");
         try {
@@ -86,7 +86,7 @@ public class TypeUtil {
 //                taskDO.setResult("失败");
             }
             SpringUtil.getBean(ITaskDOService.class).update(taskDO);
-            webSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
+            WebSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
 
         }catch (IOException e) {
 //            e.printStackTrace();
