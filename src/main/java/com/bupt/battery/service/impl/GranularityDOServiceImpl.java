@@ -48,6 +48,14 @@ public class GranularityDOServiceImpl extends BaseServiceImpl<GranularityDO,Long
                 {
                     predicateList.add(criteriaBuilder.equal(root.get("vehicleId"),form.getVehicleId()));
                 }
+                if(StringUtils.isNotBlank(form.getVin()))
+                {
+                    predicateList.add(criteriaBuilder.equal(root.get("vin"),form.getVin()));
+                }
+                if(StringUtils.isNotBlank(form.getPlateNumber()))
+                {
+                    predicateList.add(criteriaBuilder.equal(root.get("plateNumber"),form.getPlateNumber()));
+                }
                 if(StringUtils.isNotBlank(form.getCarmaker()))
                 {
                     predicateList.add(criteriaBuilder.equal(root.get("carmaker"),form.getCarmaker()));
