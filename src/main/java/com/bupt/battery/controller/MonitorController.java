@@ -52,7 +52,7 @@ public class MonitorController {
         monitorDO.setCreator(form.getCreator());
         monitorDO.setCreateTime(new Timestamp(System.currentTimeMillis()));
         monitorDO.setStatus("未就绪");
-        monitorDO.setStatus("进行中");
+        //monitorDO.setStatus("进行中");
         //设置端口号
         monitorDO.setPortId(Long.parseLong(form.getPostId()));
         monitorDO.setStartTime(form.getStartTime());
