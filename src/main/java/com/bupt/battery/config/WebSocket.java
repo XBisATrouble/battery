@@ -55,7 +55,7 @@ public class WebSocket {
     }
 
     // 此为单点消息 (发送文本)
-    public void sendTextMessage(String shopId, String message) {
+    public static void sendTextMessage(String shopId, String message) {
         Session session = sessionPool.get(shopId);
         System.out.println("---"+shopId+"--"+message);
         if (session != null) {

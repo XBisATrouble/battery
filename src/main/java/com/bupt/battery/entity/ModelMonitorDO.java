@@ -17,15 +17,23 @@ import lombok.Data;
 @Table(name = "model_monitoring", schema = "baas", catalog = "")
 public class ModelMonitorDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "model_id")
-    private String modelId;
+    private Long modelId;
+
+    @Column(name = "creator")
     private String creator;
+
     @Column(name = "create_time")
     private Timestamp createTime;
+
+    @Column(name = "status")
     private String status;
+
     @Column(name = "port_id")
-    private Integer portId;
+    private Long portId;
+
     @Column(name = "start_time")
     private Date startTime;
+
     @Column(name = "end_time")
     private Date endTime;
 
