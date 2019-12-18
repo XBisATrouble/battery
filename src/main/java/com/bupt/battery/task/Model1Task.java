@@ -20,9 +20,9 @@ public class Model1Task implements BaseMonitor{
 
 
         System.out.print("Start thread of monitor" + monitorDO.getId() + "\n");
-        //Random r = new Random();
-        //int status_R = r.nextInt(100);
-        //monitorDO.setStatus("运行中");
+//        Random r = new Random();
+//        int status_R = r.nextInt(100);
+//        monitorDO.setStatus("运行中");
         status = "运行中";
         monitorDO.setStatus(status);
         SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
@@ -44,20 +44,20 @@ public class Model1Task implements BaseMonitor{
             } else {
                 try {
                     TimeUnit.MILLISECONDS.sleep(3000);
-                    Random rand = new Random();
-                    ErrorMsgAO msgAO = new ErrorMsgAO();
-                    msgAO.setError(rand.nextInt(2));
-                    if (msgAO.getError() == 1) {
-                        List<Integer> bList = new ArrayList<>();
-                        for (int j = 0; j < rand.nextInt(10) + 1; j++) {
-                            bList.add(rand.nextInt(300) + 1);
-                        }
-                        msgAO.setNo(bList);
-                    } else {
-                        msgAO.setNo(null);
-                    }
-                    String json = JSON.toJSONString(msgAO);
-                    WebSocket.sendTextMessage(monitorDO.getId() + "", json);
+//                    Random rand = new Random();
+//                    ErrorMsgAO msgAO = new ErrorMsgAO();
+//                    msgAO.setError(rand.nextInt(2));
+//                    if (msgAO.getError() == 1) {
+//                        List<Integer> bList = new ArrayList<>();
+//                        for (int j = 0; j < rand.nextInt(10) + 1; j++) {
+//                            bList.add(rand.nextInt(300) + 1);
+//                        }
+//                        msgAO.setNo(bList);
+//                    } else {
+//                        msgAO.setNo(null);
+//                    }
+//                    String json = JSON.toJSONString(msgAO);
+//                    WebSocket.sendTextMessage(monitorDO.getId() + "", json);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

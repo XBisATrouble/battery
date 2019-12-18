@@ -59,19 +59,14 @@ public class MonitorController {
         monitorDO.setEndTime(form.getEndTime());
         //save to base
         monitorDO = modelMonitorDOService.save(monitorDO);
-        //return monitorDO;
-//        if (monitorDO.getStatus().equals("未就绪")) {
-//            String name = "Model" + monitorDO.getModelId().toString();
-//            monitorDO.setStatus("已就绪");
-//            modelMonitorDOService.update(monitorDO);
-//            System.out.print("start run" + name + "Task" + "\n");
-//            //为此监控开启线程
-//            MonitorThread monitorThread = new MonitorThread(monitorDO,name);
-//            pool.execute(monitorThread);
-//        } else {
-//            System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
-//        }
-        //return monitorDO;
+        if (monitorDO.getStatus().equals("未就绪")) {
+            String name = "ModelStateTask";
+            //为此监控开启线程
+            MonitorThread monitorThread = new MonitorThread(monitorDO,name);
+            pool.execute(monitorThread);
+        } else {
+            System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
+        }
     }
 
     //删除监控
@@ -133,17 +128,12 @@ public class MonitorController {
 
     @RequestMapping(value = "/monitoring")
     public void pushToWeb(@RequestBody MonitorDCform form) {
-//        ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
-//        if (monitorDO.getStatus().equals("未就绪")) {
-//            //为此监控开启线程
-//            String name = "Model" + monitorDO.getModelId().toString();
-//            monitorDO.setStatus("已就绪");
-//            modelMonitorDOService.update(monitorDO);
-//            System.out.print("start run" + name + "Task" + "\n");
-//            MonitorThread monitorThread = new MonitorThread(monitorDO,name);
-//            pool.execute(monitorThread);
-//        } else {
-//            System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
-//        }
+        ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
+        if (monitorDO.getStatus().equals("进行中")) {
+            String name = "Model" + monitorDO.getModelId() + "Task";
+            MonitorThread monitorThread = new MonitorThread(monitorDO, name);
+            pool.execute(monitorThread);
+
+        }
     }
 }

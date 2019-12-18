@@ -4,67 +4,45 @@ import com.alibaba.fastjson.JSON;
 import com.bupt.battery.AO.ErrorMsgAO;
 import com.bupt.battery.config.WebSocket;
 import com.bupt.battery.entity.ModelMonitorDO;
+import com.bupt.battery.entity.MonitorResultDO;
 import com.bupt.battery.service.IModelMonitorDOService;
+import com.bupt.battery.service.IMonitorResultDOService;
 import com.bupt.battery.util.SpringUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Model0Task implements BaseMonitor {
-    private Timer timer = new Timer();
-    private String status;
+
+    private IMonitorResultDOService monitorResultDOService;
     @Override
     public void excute(ModelMonitorDO monitorDO) {
-
-
-        System.out.print("Start thread of monitor" + monitorDO.getId() + "\n");
-        while (true) {
-            if (monitorDO.getStartTime().equals(new Timestamp(System.currentTimeMillis()))) {
-                //监控启动时间到达当前系统时间 运行
-                //更新监控状态
-                status = "运行中";
-                monitorDO.setStatus(status);
-                SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
-                System.out.print("monitor" + monitorDO.getId() + "运行中\n");
-
-                //运行
-                Random r = new Random();
-                int status_R = r.nextInt(500);
-                if (status_R > 490) {
-                    if (status_R <= 495) {
-                        status = "已完成";
-                    } else {
-                        status = "已失败";
-                    }
-                    break;
-                } else {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(3000);
-                        Random rand = new Random();
-                        ErrorMsgAO msgAO = new ErrorMsgAO();
-                        msgAO.setError(rand.nextInt(2));
-                        if (msgAO.getError() == 1) {
-                            List<Integer> bList = new ArrayList<>();
-                            for (int j = 0; j < rand.nextInt(10) + 1; j++) {
-                                bList.add(rand.nextInt(300) + 1);
-                            }
-                            msgAO.setNo(bList);
-                        } else {
-                            msgAO.setNo(null);
-                        }
-                        String json = JSON.toJSONString(msgAO);
-                        WebSocket.sendTextMessage(monitorDO.getId() + "", json);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+        SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
+        if (monitorDO.getStatus().equals("进行中")) {
+            while (true) {
+                //获取新数据
+                Long vehicleId = null;
+                List<MonitorResultDO> resultDOList =
+                        SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndIsRead(vehicleId, monitorDO.getPortId(), Long.parseLong("0"));
+                //通过websocket给前端发送
+                for (int i = 0; i < resultDOList.size(); i++) {
+                    MonitorResultDO resultDO = resultDOList.get(i);
+                    ErrorMsgAO msgAO = new ErrorMsgAO();
+                    msgAO.setDataTime(dateFormat.format(resultDO.getDataTime()));
+                    msgAO.setResult(resultDO.getResult().toString());
+                    String json = JSON.toJSONString(msgAO);
+                    WebSocket.sendTextMessage("???", json);
+                    resultDO.setIsRead(Long.parseLong("1"));
+                    SpringUtil.getBean(IMonitorResultDOService.class).update(resultDO);
                 }
+                //系统时间达到设定时间 跳出循环
+                if (monitorDO.getStartTime().equals(new Timestamp(System.currentTimeMillis()))) break;
             }
         }
-        timer.cancel();
-        System.out.print(status);
-        //更新监控状态
-        monitorDO.setStatus(status);
-        SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
     }
 }
