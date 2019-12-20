@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TaskFactory {
-    public BaseTask getTask(String name) {
+    BaseTask getTask(String name) {
         System.out.println(name+"-------name");
         try {
             Class<?> factoryClass = Class.forName(name);
@@ -14,13 +14,14 @@ public class TaskFactory {
             return null;
         }
     }
-    public BaseMonitor getMonitor(String name) {
-        System.out.println(name+"-------name");
+    BaseMonitor getMonitor(String name) {
         try {
+            System.out.println(name+"-------task_name");
             Class<?> factoryClass = Class.forName(name);
             return (BaseMonitor) factoryClass.newInstance();
         }catch (Exception e)
         {
+            System.out.println(name+"-------can't get this task");
             return null;
         }
     }

@@ -21,11 +21,13 @@ public class WebSocket {
 
     private static CopyOnWriteArraySet<WebSocket> webSockets =new CopyOnWriteArraySet<>();
     private static Map<String,Session> sessionPool = new HashMap<>();
+    private static int onlineCount = 0;
 
     @OnOpen
     public void onOpen(Session session, @PathParam(value="shopId")String shopId) {
         this.session = session;
         webSockets.add(this);
+        addOnlineCount();
         sessionPool.put(shopId, session);
         System.out.println(shopId+ session);
         System.out.println("【websocket消息】有新的连接，总数为:"+webSockets.size());
@@ -33,6 +35,7 @@ public class WebSocket {
 
     @OnClose
     public void onClose() {
+        subOnlineCount();
         webSockets.remove(this);
         System.out.println("【websocket消息】连接断开，总数为:"+webSockets.size());
     }
@@ -78,6 +81,18 @@ public class WebSocket {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static synchronized int getOnlineCount() {
+        return onlineCount;
+    }
+
+    public static synchronized void addOnlineCount() {
+        WebSocket.onlineCount++;
+    }
+
+    public static synchronized void subOnlineCount() {
+        WebSocket.onlineCount--;
     }
 
 

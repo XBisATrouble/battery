@@ -14,20 +14,20 @@ import java.util.Date;
 @Table(name = "monitor_result", schema = "baas", catalog = "")
 public class MonitorResultDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "vehicle_id")
-    private Long vehicleId;
+    private int vehicleId;
 
     @Column(name = "data_time")
     private Date dataTime;
 
     @Column(name = "is_read")
-    private Long isRead;
+    private int isRead;
 
     @Column(name = "result")
     private Float result;
 
     @Column(name = "model_id")
-    private Long modelId;
+    private int modelId;
 
     @Column(name = "port_id")
-    private Long portId;
+    private int portId;
 }

@@ -17,4 +17,5 @@ public class MonitorSaveForm {
     @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date endTime;
+    private String vehicleId;
 }

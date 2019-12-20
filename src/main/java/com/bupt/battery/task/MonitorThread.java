@@ -14,7 +14,7 @@ public class MonitorThread implements Runnable {
     @Override
     public void run(){
         BaseMonitor baseMonitor = SpringUtil.getBean(TaskFactory.class).getMonitor(name);
-        System.out.print(baseMonitor.toString());
+        //System.out.print(baseMonitor.toString());
         baseMonitor.excute(monitorDO);
     }
 }

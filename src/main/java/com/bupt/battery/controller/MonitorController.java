@@ -8,11 +8,13 @@ import com.bupt.battery.AO.MonitorReturnAO;
 import com.bupt.battery.config.WebSocket;
 import com.bupt.battery.entity.ModelDO;
 import com.bupt.battery.entity.ModelMonitorDO;
+import com.bupt.battery.entity.MonitorResultDO;
 import com.bupt.battery.form.MonitorDCform;
 import com.bupt.battery.form.MonitorQueryForm;
 import com.bupt.battery.form.MonitorSaveForm;
 import com.bupt.battery.service.IModelDOService;
 import com.bupt.battery.service.IModelMonitorDOService;
+import com.bupt.battery.service.IMonitorResultDOService;
 import com.bupt.battery.task.MonitorThread;
 import com.bupt.battery.task.TaskThreadPoolExecutor;
 //import com.sun.marlin.stats.Monitor;
@@ -27,6 +29,7 @@ import java.util.*;
 @RestController
 @RequestMapping(path = "/api/monitor",method = RequestMethod.POST,produces = "application/json; charset=UTF-8")
 public class MonitorController {
+
     //模型监控Service
     @Autowired
     private IModelMonitorDOService modelMonitorDOService;
@@ -39,31 +42,67 @@ public class MonitorController {
 
     public WebSocket webSocket = new WebSocket();
 
+    private IMonitorResultDOService monitorResultDOService;
+
     //private Timer timer = new Timer();
 
     //新增监控
     @RequestMapping(value = "/save")
     public void saveMonitor(@RequestBody MonitorSaveForm form)
     {
+//        List<MonitorResultDO> list =
+//                monitorResultDOService.
+//                        findAllByVehicleIdAndPortIdAndModelId(
+//                                Integer.parseInt(form.getVehicleId()),
+//                                Integer.parseInt(form.getModelId()),
+//                                Integer.parseInt(form.getModelId()));
+//        if (list.size() != 0) {
+//            //返回该监控已存在
+//        } else {
+//            //System.out.println(form);
+//            ModelMonitorDO monitorDO = new ModelMonitorDO();
+//
+//            monitorDO.setModelId(Long.parseLong(form.getModelId()));
+//            monitorDO.setCreator(form.getCreator());
+//            monitorDO.setCreateTime(new Timestamp(System.currentTimeMillis()));
+//            monitorDO.setStatus("进行中");
+//            //monitorDO.setStatus("进行中");
+//            //设置端口号
+//            monitorDO.setPortId(Long.parseLong(form.getPostId()));
+//            monitorDO.setStartTime(form.getStartTime());
+//            monitorDO.setEndTime(form.getEndTime());
+//            monitorDO.setVehicleId(Integer.parseInt(form.getVehicleId()));
+//            //save to base
+//            monitorDO = modelMonitorDOService.save(monitorDO);
+//            if (monitorDO.getStatus().equals("未就绪")) {
+//                String name = "ModelStateTask";
+//                //为此监控开启线程
+//                MonitorThread monitorThread = new MonitorThread(monitorDO,name);
+//                pool.execute(monitorThread);
+//            } else {
+//                System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
+//            }
+//        }
         //System.out.println(form);
         ModelMonitorDO monitorDO = new ModelMonitorDO();
 
         monitorDO.setModelId(Long.parseLong(form.getModelId()));
         monitorDO.setCreator(form.getCreator());
         monitorDO.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        monitorDO.setStatus("未就绪");
+        monitorDO.setStatus("进行中");
         //monitorDO.setStatus("进行中");
         //设置端口号
         monitorDO.setPortId(Long.parseLong(form.getPostId()));
         monitorDO.setStartTime(form.getStartTime());
         monitorDO.setEndTime(form.getEndTime());
+        monitorDO.setVehicleId(Integer.parseInt(form.getVehicleId()));
         //save to base
         monitorDO = modelMonitorDOService.save(monitorDO);
         if (monitorDO.getStatus().equals("未就绪")) {
             String name = "ModelStateTask";
             //为此监控开启线程
-            MonitorThread monitorThread = new MonitorThread(monitorDO,name);
-            pool.execute(monitorThread);
+            //MonitorThread monitorThread = new MonitorThread(monitorDO,name);
+            //pool.execute(monitorThread);
         } else {
             System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
         }
@@ -98,6 +137,7 @@ public class MonitorController {
                 queryAO.setStartTime(dateFormat.format(monitorDOList.get(i).getStartTime()));
                 queryAO.setEndTime(dateFormat.format(monitorDOList.get(i).getEndTime()));
                 queryAO.setStatus(monitorDOList.get(i).getStatus());
+                queryAO.setVehicleId(monitorDOList.get(i).getVehicleId() + "");
                 queryAOList.add(queryAO);
             }
         }
@@ -117,7 +157,7 @@ public class MonitorController {
         //copyAO.setModelId(monitorDO.getModelId().toString());
         //copyAO.setModelName(modelDO.getModelName());
         copyAO.setPortId(monitorDO.getPortId().toString());
-
+        copyAO.setVehicleId(monitorDO.getVehicleId() + "");
         List<String> timeList = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         timeList.add(dateFormat.format(monitorDO.getCreateTime()));
@@ -126,14 +166,13 @@ public class MonitorController {
         return copyAO;
     }
 
-    @RequestMapping(value = "/monitoring")
+    @RequestMapping(value = "/realTimeMonitor")
     public void pushToWeb(@RequestBody MonitorDCform form) {
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         if (monitorDO.getStatus().equals("进行中")) {
-            String name = "Model" + monitorDO.getModelId() + "Task";
+            String name = "Model" + monitorDO.getModelId();
             MonitorThread monitorThread = new MonitorThread(monitorDO, name);
             pool.execute(monitorThread);
-
         }
     }
 }
