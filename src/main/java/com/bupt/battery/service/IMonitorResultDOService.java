@@ -1,6 +1,7 @@
 package com.bupt.battery.service;
 
 import com.bupt.battery.entity.MonitorResultDO;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
