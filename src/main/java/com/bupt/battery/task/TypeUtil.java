@@ -94,6 +94,8 @@ public class TypeUtil {
             taskDO.setStatus(StatusType.Fail.getName());
             //                taskDO.setResultType(0);
             taskDO.setReason("系统异常，请联系管理员!");
+            SpringUtil.getBean(ITaskDOService.class).update(taskDO);
+            webSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
         }
 
     }
