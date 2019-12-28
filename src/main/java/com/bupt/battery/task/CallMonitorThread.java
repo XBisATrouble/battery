@@ -9,12 +9,18 @@ import java.io.InputStreamReader;
 public class CallMonitorThread implements Runnable {
 
     public Process proc;
+    public String port;
+
+    public CallMonitorThread(String port) {
+        this.port = port;
+    }
 
     @Override
     public void run() {
         try {
-            proc = Runtime.getRuntime().exec("python D:\\Workshop\\untitled4\\PythonClient.py");
-            System.out.println("in");
+            String command = "python D:\\Workshop\\untitled4\\Model1.py " + port;
+            System.out.println(command);
+            proc = Runtime.getRuntime().exec(command);
             proc.waitFor();
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = null;
