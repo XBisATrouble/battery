@@ -6,6 +6,6 @@ import java.util.List;
 
 @Data
 public class ErrorMsgAO {
-    Integer error;
-    List<Integer> no;
+    private String dataTime;
+    private String result;
 }
