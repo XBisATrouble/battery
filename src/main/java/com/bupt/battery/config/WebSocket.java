@@ -21,11 +21,13 @@ public class WebSocket {
 
     private static CopyOnWriteArraySet<WebSocket> webSockets =new CopyOnWriteArraySet<>();
     private static Map<String,Session> sessionPool = new HashMap<>();
+    private static int onlineCount = 0;
 
     @OnOpen
     public void onOpen(Session session, @PathParam(value="shopId")String shopId) {
         this.session = session;
         webSockets.add(this);
+        addOnlineCount();
         sessionPool.put(shopId, session);
         System.out.println(shopId+ session);
         System.out.println("【websocket消息】有新的连接，总数为:"+webSockets.size());
@@ -33,6 +35,7 @@ public class WebSocket {
 
     @OnClose
     public void onClose() {
+        subOnlineCount();
         webSockets.remove(this);
         System.out.println("【websocket消息】连接断开，总数为:"+webSockets.size());
     }
@@ -54,14 +57,14 @@ public class WebSocket {
         }
     }
 
-
+    // 此为单点消息 (发送文本)
     public static void sendTextMessage(String shopId, String message) {
         Session session = sessionPool.get(shopId);
-        System.out.println("---"+shopId+"--"+message);
+        //System.out.println("---"+shopId+"--"+message);
         if (session != null) {
             try {
                 System.out.println("---"+shopId+"--"+message);
-                session.getBasicRemote().sendText(shopId+message);
+                session.getBasicRemote().sendText(message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -78,6 +81,18 @@ public class WebSocket {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static synchronized int getOnlineCount() {
+        return onlineCount;
+    }
+
+    public static synchronized void addOnlineCount() {
+        WebSocket.onlineCount++;
+    }
+
+    public static synchronized void subOnlineCount() {
+        WebSocket.onlineCount--;
     }
 
 

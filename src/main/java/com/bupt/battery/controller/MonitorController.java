@@ -29,8 +29,10 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping(path = "/api/monitor",method = RequestMethod.POST,produces = "application/json; charset=UTF-8")
@@ -45,15 +47,16 @@ public class MonitorController {
     @Autowired
     private TaskThreadPoolExecutor pool;
 
-    public WebSocket webSocket = new WebSocket();
+    private DateFormat fmt_s = new SimpleDateFormat("HH:mm:ss");
+
+    // public WebSocket webSocket = new WebSocket();
 
     //private Timer timer = new Timer();
 
     //新增监控
     @RequestMapping(value = "/save")
-    public void saveMonitor(@RequestBody MonitorSaveForm form)
-    {
-             //System.out.println(form);
+    public void saveMonitor(@RequestBody MonitorSaveForm form) {
+        //System.out.println(form);
         ModelMonitorDO monitorDO = new ModelMonitorDO();
 
         monitorDO.setModelId(Long.parseLong(form.getModelId()));
@@ -152,19 +155,48 @@ public class MonitorController {
         return copyAO;
     }
 
-    @RequestMapping(value = "/monitoring")
+    @RequestMapping(value = "/realTimeMonitor")
     public void pushToWeb(@RequestBody MonitorDCform form) {
-//        ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
-//        if (monitorDO.getStatus().equals("未就绪")) {
-//            //为此监控开启线程
-//            String name = "Model" + monitorDO.getModelId().toString();
-//            monitorDO.setStatus("已就绪");
-//            modelMonitorDOService.update(monitorDO);
-//            System.out.print("start run" + name + "Task" + "\n");
-//            MonitorThread monitorThread = new MonitorThread(monitorDO,name);
-//            pool.execute(monitorThread);
-//        } else {
-//            System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
-//        }
+        ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
+        if (monitorDO.getStatus().equals("进行中")) {
+            String name = "Model" + monitorDO.getModelId();
+            MonitorThread monitorThread = new MonitorThread(monitorDO, name);
+            pool.execute(monitorThread);
+        }
+        while (true) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(3000);
+                ErrorMsgAO msgAO = new ErrorMsgAO();
+                msgAO.setDataTime(fmt_s.format(new Date()));
+                Random rand = new Random();
+                float result = rand.nextFloat();
+                msgAO.setResult(result + "");
+                String json = JSON.toJSONString(msgAO);
+                if (WebSocket.getOnlineCount() == 1) {
+                    WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
+                } else {
+                    break;
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+//        if (monitorDO.getStatus().equals("进行中")) {
+//            //no data count
+//            int no_data_ct = 0;
+//            //循环查找数据库
+//            //System.out.print("vId:" + monitorDO.getVehicleId() + "pId:"+monitorDO.getPortId() + "mId:"+monitorDO.getModelId() + "");
+//            while (true) {
+//                //获取新数据
+//                List<MonitorResultDO> resultDOList =
+//                        SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
+//                                monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), 0, 0
+//                        );
+//                if (resultDOList.size() !=0 ) {
+//                    System.out.print(resultDOList.size());
+//                    for (MonitorResultDO resultDO : resultDOList) {
+//                        try{
+//                            E
     }
 }
