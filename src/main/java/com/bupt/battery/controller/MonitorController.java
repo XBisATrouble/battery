@@ -67,8 +67,8 @@ public class MonitorController {
         monitorDO.setEndTime(form.getEndTime());
         //save to base
 
-        // monitorDO = modelMonitorDOService.save(monitorDO);
-        //return monitorDO;
+        monitorDO = modelMonitorDOService.save(monitorDO);
+        // return monitorDO;
 //        if (monitorDO.getStatus().equals("未就绪")) {
 //            String name = "Model" + monitorDO.getModelId().toString();
 //            monitorDO.setStatus("已就绪");
