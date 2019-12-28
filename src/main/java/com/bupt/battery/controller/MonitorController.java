@@ -13,13 +13,21 @@ import com.bupt.battery.form.MonitorQueryForm;
 import com.bupt.battery.form.MonitorSaveForm;
 import com.bupt.battery.service.IModelDOService;
 import com.bupt.battery.service.IModelMonitorDOService;
+import com.bupt.battery.task.CallMonitorThread;
 import com.bupt.battery.task.MonitorThread;
+import com.bupt.battery.task.ServerTask;
 import com.bupt.battery.task.TaskThreadPoolExecutor;
 //import com.sun.marlin.stats.Monitor;
 //import jdk.internal.net.http.common.SSLFlowDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -45,7 +53,7 @@ public class MonitorController {
     @RequestMapping(value = "/save")
     public void saveMonitor(@RequestBody MonitorSaveForm form)
     {
-        //System.out.println(form);
+             //System.out.println(form);
         ModelMonitorDO monitorDO = new ModelMonitorDO();
 
         monitorDO.setModelId(Long.parseLong(form.getModelId()));
@@ -58,8 +66,9 @@ public class MonitorController {
         monitorDO.setStartTime(form.getStartTime());
         monitorDO.setEndTime(form.getEndTime());
         //save to base
+
         monitorDO = modelMonitorDOService.save(monitorDO);
-        //return monitorDO;
+        // return monitorDO;
 //        if (monitorDO.getStatus().equals("未就绪")) {
 //            String name = "Model" + monitorDO.getModelId().toString();
 //            monitorDO.setStatus("已就绪");
@@ -72,6 +81,18 @@ public class MonitorController {
 //            System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
 //        }
         //return monitorDO;
+
+        // 多线程启用端口，端口号来自表单中的PostID
+        try {
+            ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
+            new Thread(new ServerTask(server)).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 启用python模型
+        // TODO 这里需要改成多种模型可以适用的
+        new Thread(new CallMonitorThread(form.getPostId())).start();
     }
 
     //删除监控
