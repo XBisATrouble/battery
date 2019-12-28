@@ -90,6 +90,8 @@ public class MonitorController {
             e.printStackTrace();
         }
 
+        // 启用python模型
+        // TODO 这里需要改成多种模型可以适用的
         new Thread(new CallMonitorThread()).start();
     }
 

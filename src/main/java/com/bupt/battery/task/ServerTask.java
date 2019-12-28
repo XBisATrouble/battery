@@ -3,6 +3,8 @@ package com.bupt.battery.task;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 处理Socket请求的线程类
@@ -11,6 +13,7 @@ import java.net.Socket;
 public class ServerTask implements Runnable {
 
     private ServerSocket server;
+    Map<String, ClientHandler> clients = new ConcurrentHashMap<String, ClientHandler>();
 
     /**
      * 构造函数
@@ -23,11 +26,11 @@ public class ServerTask implements Runnable {
     public void run() {
         try {
             System.out.println("等待与客户端建立连接...");
-            while(true)
-            {
-                Socket socket = server.accept();
-                System.out.println("客户端已连接："+socket.getInetAddress());
-                new HandlerThread(socket);
+
+            for (Socket socket = server.accept(); socket != null; socket = server.accept()) {
+                System.out.println("客户端A建立连接："+ socket.getInetAddress()+socket.getPort());
+                Runnable handler = new ClientHandler(socket, clients);
+                new Thread(handler).start();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -35,65 +38,84 @@ public class ServerTask implements Runnable {
     }
 
 
-    /**
-     * 多线程跟客户端Socket进行通信
-     */
-    private static class HandlerThread implements Runnable {
-        private Socket socket;
-        public HandlerThread(Socket client) {
-            socket = client;
-            new Thread(this).start();
+    private static class ClientHandler implements Runnable {
+        private final Socket socket;
+
+        // 所有的写入都在os上执行
+        private final PrintWriter os;
+        private final BufferedReader is;
+
+        // 用于记录该server中的clients
+        private final Map<String, ClientHandler> clients;
+
+        private String clientId;
+
+        public ClientHandler(Socket socket, Map<String, ClientHandler> clients)
+                throws IOException {
+            this.socket = socket;
+            this.clients = clients;
+            this.os = new PrintWriter(
+                    new OutputStreamWriter(socket.getOutputStream()));
+            this.is = new BufferedReader(new InputStreamReader(socket
+                    .getInputStream()));
         }
 
+        @Override
         public void run() {
             try {
-                // 跟客户端建立好连接之后，我们就可以获取socket的InputStream，并从中读取客户端发过来的信息了
+                // First line the client sends us is the client ID.
+                clientId = is.readLine();
+                clients.put(clientId, this);
+                System.out.println(clients.toString());
 
-                String message[] = {
-                    "(390287, 10, datetime.datetime(2018, 1, 8, 6, 48), 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.61, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.61, 3.59, 3.61, 3.6, 3.56, 3.61, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.61, 3.6, 3.6, 3.6, 3.6, 3.61, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)",
-                            "(390288, 10, datetime.datetime(2018, 1, 8, 6, 48), 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.61, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.61, 3.59, 3.6, 3.6, 3.56, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.61, 3.6, 3.6, 3.6, 3.6, 3.61, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)",
-                            "(390289, 10, datetime.datetime(2018, 1, 8, 6, 48), 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.61, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.61, 3.59, 3.6, 3.6, 3.56, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)",
-                            "(390290, 10, datetime.datetime(2018, 1, 8, 6, 48), 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.61, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.59, 3.6, 3.6, 3.56, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)",
-                            "(390291, 10, datetime.datetime(2018, 1, 8, 6, 49), 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.61, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.59, 3.6, 3.6, 3.56, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, 3.6, 3.6, 3.6, 3.59, 3.6, 3.59, 3.59, 3.59, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.59, 3.59, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)"
-                };
+                for (String line = is.readLine(); line != null; line = is.readLine()) {
 
-
-                for (int i = 0; i<5; ++i) {
-
-                    socket.getOutputStream().write(message[i].getBytes("UTF-8"));
-                }
-
-                BufferedReader br = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream(), "UTF-8"));
-                StringBuilder sb = new StringBuilder();
-                String temp;
-                int index;
-                while ((temp = br.readLine()) != null) {
-                    if ((index = temp.indexOf("eof")) != -1) { // 遇到eof时就结束接收
-                        sb.append(temp.substring(0, index));
-                        break;
+                    int separatorIndex = line.indexOf(':');
+                    if (separatorIndex <= 0) {
+                        continue;
                     }
-                    sb.append(temp);
+                    String toClient = line.substring(0, separatorIndex);
+                    String message = line.substring(separatorIndex + 1);
+                    ClientHandler client = clients.get(toClient);
+                    if (client != null) {
+                        client.sendMessage(clientId, message);
+                        System.out.println("发送成功");
+                    }
+
                 }
-                System.out.println("Form Cliect[port:" + socket.getPort()
-                        + "] 消息内容:" + sb.toString());
-
-
-                br.close();
-                socket.close();
             } catch (Exception e) {
-                System.out.println("服务器 run 异常: " + e.getMessage());
+                e.printStackTrace();
             } finally {
-                if (socket != null) {
-                    try {
-                        socket.close();
-                    } catch (Exception e) {
-                        socket = null;
-                        System.out.println("服务端 finally 异常:" + e.getMessage());
-                    }
+                System.out.println("Client " + clientId + " terminated.");
+                clients.remove(clientId);
+                try {
+                    socket.close();
+                } catch (IOException ioe) {
+                    // TODO Auto-generated catch block
+                    ioe.printStackTrace();
                 }
             }
         }
+
+        public void sendMessage(String from, String message) {
+            try {
+                synchronized (os) {
+                    os.println(message);
+                    os.flush();
+                }
+            } catch (Exception e) {
+                // We shutdown this client on any exception.
+                e.printStackTrace();
+                try {
+                    socket.close();
+                } catch (IOException ioe) {
+                    // TODO Auto-generated catch block
+                    ioe.printStackTrace();
+                }
+            }
+        }
+
+
     }
 
 }
