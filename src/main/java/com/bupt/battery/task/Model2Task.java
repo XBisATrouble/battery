@@ -1,22 +1,22 @@
-package com.bupt.battery.task;
-
-import com.alibaba.fastjson.JSON;
-import com.bupt.battery.AO.ErrorMsgAO;
-import com.bupt.battery.config.WebSocket;
-import com.bupt.battery.entity.ModelMonitorDO;
-import com.bupt.battery.service.IModelMonitorDOService;
-import com.bupt.battery.util.SpringUtil;
-
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-public class Model2Task implements BaseMonitor {
-    private Timer timer = new Timer();
-    private String status;
-    @Override
-    public void excute(ModelMonitorDO monitorDO){
-
-
+//package com.bupt.battery.task;
+//
+//import com.alibaba.fastjson.JSON;
+//import com.bupt.battery.AO.ErrorMsgAO;
+//import com.bupt.battery.config.WebSocket;
+//import com.bupt.battery.entity.ModelMonitorDO;
+//import com.bupt.battery.service.IModelMonitorDOService;
+//import com.bupt.battery.util.SpringUtil;
+//
+//import java.util.*;
+//import java.util.concurrent.TimeUnit;
+//
+//public class Model2Task implements BaseMonitor {
+//    private Timer timer = new Timer();
+//    private String status;
+//    @Override
+//    public void excute(ModelMonitorDO monitorDO){
+//
+//
 //        System.out.print("Start thread of monitor" + monitorDO.getId() + "\n");
 //        //Random r = new Random();
 //        //int status_R = r.nextInt(100);
@@ -62,5 +62,5 @@ public class Model2Task implements BaseMonitor {
 //        //更新监控状态
 //        monitorDO.setStatus(status);
 //        SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
-    }
-}
+//    }
+//}

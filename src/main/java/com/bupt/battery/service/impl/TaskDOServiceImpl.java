@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class TaskDOServiceImpl extends BaseServiceImpl<TaskDO,Long> implements ITaskDOService {
     @Autowired
     private ITaskDORepository taskDORepository;
+    @Override
     public Page<TaskDO> findTaskListByPage(Integer pageNum,Integer pageSize,String taskName, Date startTime,Date endTime,TaskType taskType)
     {   pageNum=pageNum!=null?pageNum:0;
         pageSize=pageSize!=null?pageSize:10;
