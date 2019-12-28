@@ -17,7 +17,6 @@ import lombok.Data;
 @Table(name = "model_monitoring", schema = "baas", catalog = "")
 public class ModelMonitorDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "model_id")
-
     private Long modelId;
 
     @Column(name = "creator")
@@ -38,4 +37,6 @@ public class ModelMonitorDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "end_time")
     private Date endTime;
 
+    @Column(name = "vehicle_id")
+    private int vehicleId;
 }
