@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 public class GranularityDOServiceImpl extends BaseServiceImpl<GranularityDO,Long> implements IGranularityDOService {
     @Autowired
     private IGranularityDORepository granularityDORepository;
+    @Override
     public List<GranularityDO> findGranularityList(GranularityForm form) {
         Specification<GranularityDO> specification = getSpe(form);
         return granularityDORepository.findAll(specification);
