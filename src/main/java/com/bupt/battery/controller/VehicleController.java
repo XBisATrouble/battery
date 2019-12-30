@@ -5,6 +5,7 @@ import com.bupt.battery.AO.ChartAO;
 import com.bupt.battery.AO.FileAO;
 import com.bupt.battery.AO.TableAO;
 import com.bupt.battery.Enum.AreaType;
+import com.bupt.battery.config.WebSocket;
 import com.bupt.battery.entity.DataManagementDO;
 import com.bupt.battery.entity.GranularityDO;
 import com.bupt.battery.entity.TaskDO;
@@ -295,8 +296,8 @@ public class VehicleController {
         object.put("time", form.getTime());
         object.put("area", form.getArea());
         object.put("type", form.getType());
-        object.put("data", data);
-        CleanThread cleanThread = new CleanThread(object.toJSONString());
+        //object.put("data", data);
+        CleanThread cleanThread = new CleanThread(object.toJSONString(), form.shopId);
         pool.execute(cleanThread);
     }
 

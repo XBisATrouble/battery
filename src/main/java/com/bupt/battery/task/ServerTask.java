@@ -1,5 +1,7 @@
 package com.bupt.battery.task;
 
+import com.bupt.battery.config.WebSocket;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -78,6 +80,7 @@ public class ServerTask implements Runnable {
                     String message = line.substring(separatorIndex + 1);
                     ClientHandler client = clients.get(toClient);
                     if (client != null) {
+                        WebSocket.sendTextMessage("portMsg",message);
                         client.sendMessage(clientId, message);
                         System.out.println("发送成功");
                     }

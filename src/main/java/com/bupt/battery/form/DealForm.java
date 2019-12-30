@@ -9,6 +9,7 @@ public class DealForm implements Serializable {
     public String time;
     public String type;
     public String area;
-    public String code;
+    //public String code;
+    public String shopId;
     public List<String> dealList;
 }

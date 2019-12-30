@@ -16,6 +16,7 @@ public class MonitorQueryAO implements Serializable {
     private String startTime;
     private String endTime;
     private String status;
+    private String vehicleId;
 //    private List<String> monitorIdList;
 //    private List<String> modelIdList;
 //    private List<String> creatorList;

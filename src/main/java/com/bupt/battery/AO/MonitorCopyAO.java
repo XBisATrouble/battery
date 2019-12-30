@@ -10,5 +10,6 @@ public class MonitorCopyAO implements Serializable {
     //private String modelName;
     //private String modelId;
     private String portId;
+    private String vehicleId;
     private List<String> dataContainer;
 }
