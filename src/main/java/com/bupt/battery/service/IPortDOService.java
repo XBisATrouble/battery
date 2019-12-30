@@ -12,4 +12,5 @@ public interface IPortDOService extends BaseService<PortDO,Long> {
     List<PortDO> findByNameAndStatus(String portName,Integer status);
     Page<PortDO> findPortPage(Pageable pageable);
     List<PortDO> findByStatus(Integer status);
+    PortDO findPortDOByPortNum(Integer portNum);
 }

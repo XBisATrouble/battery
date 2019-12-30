@@ -1,30 +1,28 @@
 package com.bupt.battery.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.bupt.battery.AO.ErrorMsgAO;
 import com.bupt.battery.AO.MonitorCopyAO;
 import com.bupt.battery.AO.MonitorQueryAO;
-import com.bupt.battery.AO.MonitorReturnAO;
+import com.bupt.battery.AO.PlayBackAO;
 import com.bupt.battery.config.WebSocket;
-import com.bupt.battery.entity.ModelDO;
 import com.bupt.battery.entity.ModelMonitorDO;
 import com.bupt.battery.entity.MonitorResultDO;
+import com.bupt.battery.entity.PortDO;
 import com.bupt.battery.form.MonitorDCform;
 import com.bupt.battery.form.MonitorQueryForm;
 import com.bupt.battery.form.MonitorSaveForm;
 import com.bupt.battery.service.IModelDOService;
 import com.bupt.battery.service.IModelMonitorDOService;
 import com.bupt.battery.service.IMonitorResultDOService;
+import com.bupt.battery.service.IPortDOService;
 import com.bupt.battery.task.CallMonitorThread;
-import com.bupt.battery.task.MonitorThread;
 import com.bupt.battery.task.ServerTask;
 import com.bupt.battery.task.TaskThreadPoolExecutor;
-//import com.sun.marlin.stats.Monitor;
-//import jdk.internal.net.http.common.SSLFlowDelegate;
 import com.bupt.battery.util.SpringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -43,9 +41,6 @@ public class MonitorController {
     //模型监控Service
     @Autowired
     private IModelMonitorDOService modelMonitorDOService;
-    //模型Service
-    @Autowired
-    private IModelDOService modelDOService;
     //监控线程池
     @Autowired
     private TaskThreadPoolExecutor pool;
@@ -53,59 +48,57 @@ public class MonitorController {
     private DateFormat fmt_s = new SimpleDateFormat("HH:mm:ss");
     private DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    // public WebSocket webSocket = new WebSocket();
-
-    //private Timer timer = new Timer();
-
     //新增监控
     @RequestMapping(value = "/save")
-    public void saveMonitor(@RequestBody MonitorSaveForm form) {
-        //System.out.println(form);
+    public JSONObject saveMonitor(@RequestBody MonitorSaveForm form) {
+        JSONObject object = new JSONObject();
+        object.put("error_code", 500);
+        object.put("msg", "端口无效");
         ModelMonitorDO monitorDO = new ModelMonitorDO();
+        List<PortDO> list = SpringUtil.getBean(IPortDOService.class).findAll();
+        for (PortDO port : list) {
+            if (Integer.parseInt(form.getPostId()) == port.getPortNum()) {
+                monitorDO.setModelId(Long.parseLong(form.getModelId()));
+                monitorDO.setCreator(form.getCreator());
+                monitorDO.setCreateTime(new Timestamp(System.currentTimeMillis()));
+                monitorDO.setStatus("已就绪");
+                monitorDO.setPortId(Long.parseLong(form.getPostId()));
+                //更新port信息
+                port.setStatus(1);
+                SpringUtil.getBean(IPortDOService.class).update(port);
+                monitorDO.setStartTime(form.getStartTime());
+                monitorDO.setEndTime(form.getEndTime());
+                monitorDO.setVehicleId(Integer.parseInt(form.getVehicleId()));
+                //save to base
+                monitorDO = modelMonitorDOService.save(monitorDO);
 
-        monitorDO.setModelId(Long.parseLong(form.getModelId()));
-        monitorDO.setCreator(form.getCreator());
-        monitorDO.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        monitorDO.setStatus("未就绪");
-        monitorDO.setStatus("进行中");
-        //设置端口号
-        monitorDO.setPortId(Long.parseLong(form.getPostId()));
-        monitorDO.setStartTime(form.getStartTime());
-        monitorDO.setEndTime(form.getEndTime());
-        //save to base
+                // 多线程启用端口，端口号来自表单中的PostID
+                try {
+                    ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
+                    new Thread(new ServerTask(server)).start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-        monitorDO = modelMonitorDOService.save(monitorDO);
-        // return monitorDO;
-//        if (monitorDO.getStatus().equals("未就绪")) {
-//            String name = "Model" + monitorDO.getModelId().toString();
-//            monitorDO.setStatus("已就绪");
-//            modelMonitorDOService.update(monitorDO);
-//            System.out.print("start run" + name + "Task" + "\n");
-//            //为此监控开启线程
-//            MonitorThread monitorThread = new MonitorThread(monitorDO,name);
-//            pool.execute(monitorThread);
-//        } else {
-//            System.out.print("monitor" + monitorDO.getId() + "运行中/已完成/已失败");
-//        }
-        //return monitorDO;
-
-        // 多线程启用端口，端口号来自表单中的PostID
-        try {
-            ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
-            new Thread(new ServerTask(server)).start();
-        } catch (IOException e) {
-            e.printStackTrace();
+                object.put("error_code", 200);
+                object.put("msg", "新增监控成功！");
+                break;
+                // 启用python模型
+                // TODO 这里需要改成多种模型可以适用的
+                //new Thread(new CallMonitorThread(form.getPostId())).start();
+            }
+//            } else if (Integer.parseInt(form.getPostId()) == port.getPortNum() && port.getStatus() == 1) {
+//                object.put("code", 501);
+//                object.put("msg", "该端口已被占用");
+//                break;
+//            }
         }
-
-        // 启用python模型
-        // TODO 这里需要改成多种模型可以适用的
-        new Thread(new CallMonitorThread(form.getPostId())).start();
+        return object;
     }
 
     //删除监控
     @RequestMapping(value = "/delete")
     public void deleteMonitor(@RequestBody MonitorDCform form) {
-
         //查找要删除的monitorid
         ModelMonitorDO monitorDO =
                 modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
@@ -131,6 +124,7 @@ public class MonitorController {
                 queryAO.setStartTime(dateFormat.format(monitorDOList.get(i).getStartTime()));
                 queryAO.setEndTime(dateFormat.format(monitorDOList.get(i).getEndTime()));
                 queryAO.setStatus(monitorDOList.get(i).getStatus());
+                queryAO.setVehicleId(monitorDOList.get(i).getVehicleId()+"");
                 queryAOList.add(queryAO);
             }
         }
@@ -142,15 +136,8 @@ public class MonitorController {
     public MonitorCopyAO copyMonitor(@RequestBody MonitorDCform form) {
         ModelMonitorDO monitorDO =
                 modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
-
-        //查找模型
-        //ModelDO modelDO = modelDOService.getOne(monitorDO.getModelId());
-
         MonitorCopyAO copyAO = new MonitorCopyAO();
-        //copyAO.setModelId(monitorDO.getModelId().toString());
-        //copyAO.setModelName(modelDO.getModelName());
         copyAO.setPortId(monitorDO.getPortId().toString());
-
         List<String> timeList = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         timeList.add(dateFormat.format(monitorDO.getCreateTime()));
@@ -162,33 +149,9 @@ public class MonitorController {
     @RequestMapping(value = "/realTimeMonitor")
     public void pushToWeb(@RequestBody MonitorDCform form) {
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
-//        if (monitorDO.getStatus().equals("进行中")) {
-//            String name = "Model" + monitorDO.getModelId();
-//            MonitorThread monitorThread = new MonitorThread(monitorDO, name);
-//            pool.execute(monitorThread);
-//        }
-//        while (true) {
-//            try {
-//                TimeUnit.MILLISECONDS.sleep(3000);
-//                ErrorMsgAO msgAO = new ErrorMsgAO();
-//                msgAO.setDataTime(fmt_s.format(new Date()));
-//                Random rand = new Random();
-//                float result = rand.nextFloat();
-//                msgAO.setResult(result + "");
-//                String json = JSON.toJSONString(msgAO);
-//                if (WebSocket.getOnlineCount() == 1) {
-//                    WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
-//                } else {
-//                    break;
-//                }
-//
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        ErrorMsgAO msg0 = new ErrorMsgAO();
+        msg0.setDataTime("");
         if (monitorDO.getStatus().equals("进行中")) {
-            //no data count
-            int no_data_ct = 0;
             //循环查找数据库
             //System.out.print("vId:" + monitorDO.getVehicleId() + "pId:"+monitorDO.getPortId() + "mId:"+monitorDO.getModelId() + "");
             while (true) {
@@ -207,8 +170,9 @@ public class MonitorController {
                             //给前端结果（float）
                             msgAO.setResult(resultDO.getResult().toString());
                             String json = JSON.toJSONString(msgAO);
-                            if (WebSocket.getOnlineCount() == 1) {
+                            if (WebSocket.getOnlineCount() != 0) {
                                 TimeUnit.MILLISECONDS.sleep(3000);
+                                System.out.println("rdy for send msg");
                                 WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
                             } else {
                                 //前端实时监控关闭
@@ -223,19 +187,35 @@ public class MonitorController {
                         }
                     }
                 } else {
-                    no_data_ct = no_data_ct+1;
-                    //当获取无数据次数达到10次
                     if (WebSocket.getOnlineCount() == 0) {
                         break;
                     }
                 }
-                //系统时间达到设定时间 跳出循环
-                if (fmt.format(monitorDO.getStartTime()).equals(fmt.format(new Date()))) {
-                    monitorDO.setStatus("已完成");
-                    SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
-                    break;
-                }
             }
         }
+    }
+
+    @RequestMapping(value = "/playBackMonitor")
+    public PlayBackAO monitorPlayBack(@RequestBody MonitorDCform form) {
+        ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
+        List<String> data_time_list = new ArrayList<>();
+        List<String> result_list = new ArrayList<>();
+        PlayBackAO playBackAO = new PlayBackAO();
+        if (monitorDO.getStatus().equals("已完成")) {
+        List<MonitorResultDO> list = SpringUtil.getBean(IMonitorResultDOService.class).
+                findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
+                        monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 1
+                );
+            if (list.size() > 0) {
+                for (MonitorResultDO resultDO : list) {
+                    data_time_list.add(fmt_s.format(resultDO.getDataTime()));
+                    result_list.add(resultDO.getResult().toString());
+                }
+                playBackAO.setLen(list.size());
+                playBackAO.setDataTime(data_time_list);
+                playBackAO.setResult(result_list);
+            }
+        }
+        return playBackAO;
     }
 }

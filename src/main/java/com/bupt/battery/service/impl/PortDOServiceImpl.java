@@ -35,4 +35,9 @@ public class PortDOServiceImpl extends BaseServiceImpl<PortDO,Long> implements I
     public List<PortDO> findByStatus(Integer status) {
         return portDORepository.findPortDOSByStatus(status);
     }
+
+    @Override
+    public PortDO findPortDOByPortNum(Integer portNum) {
+        return portDORepository.findPortDOByPortNum(portNum);
+    }
 }
