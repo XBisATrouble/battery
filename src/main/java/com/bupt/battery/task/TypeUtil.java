@@ -19,19 +19,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class TypeUtil {
     @Autowired
-    private static WebSocket webSocket;
+    private WebSocket webSocket;
 
-    public static void run(ThreadForm form){
+    public void run(ThreadForm form){
 //        System.out.println(form);
 //        webSocket.sendTextMessage(form.getShopId(),form.getTaskDO().getTaskName()+"任务执行完毕");
         try {
             System.out.println("start");
             TaskDO taskDO=form.getTaskDO();
             String[] args1 = new String[] {
-                "python",
-                //                "/home/python/tmat.py",
-                form.getUrl(),
-                form.getTaskRequest()
+                    "python",
+                    //                "/home/python/tmat.py",
+                    form.getUrl(),
+                    form.getTaskRequest()
             };
             Process pr = Runtime.getRuntime().exec(args1);
             InputStreamReader ir = new InputStreamReader(pr.getInputStream(), StandardCharsets.UTF_8);
@@ -86,7 +86,7 @@ public class TypeUtil {
 //                taskDO.setResult("失败");
             }
             SpringUtil.getBean(ITaskDOService.class).update(taskDO);
-            WebSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
+            webSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
 
         }catch (IOException e) {
 //            e.printStackTrace();
