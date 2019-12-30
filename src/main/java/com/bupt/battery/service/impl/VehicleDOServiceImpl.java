@@ -51,6 +51,14 @@ public class VehicleDOServiceImpl extends BaseServiceImpl<VehicleDO,Long> implem
                 {
                     predicateList.add(criteriaBuilder.equal(root.get("vehicleId"),form.getVehicleId()));
                 }
+                if(form.getVin()!=null)
+                {
+                    predicateList.add(criteriaBuilder.like(root.get("vin"),form.getVin()+"%"));
+                }
+                if(form.getPlateNumber()!=null)
+                {
+                    predicateList.add(criteriaBuilder.like(root.get("plateNumber"),form.getPlateNumber()+"%"));
+                }
                 if(StringUtils.isNotBlank(form.getCarmaker()))
                 {
                     predicateList.add(criteriaBuilder.equal(root.get("carmaker"),form.getCarmaker()));
