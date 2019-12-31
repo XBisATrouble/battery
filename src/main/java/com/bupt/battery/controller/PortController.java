@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -28,9 +30,14 @@ public class PortController {
     @RequestMapping(path = "/get")
     public List<PortDO> getPort(@RequestBody PortQueryForm form)
     {
-        if (form.getPortName().equals("") && form.getStatus().equals(-1)) {
-            return portDOService.findAll();
+        if (form.getStatus().equals(-1)) {
+            if (form.getPortName().equals("")) {
+                return portDOService.findAll();
+            } else {
+                return Collections.singletonList(portDOService.findByName(form.getPortName()));
+            }
         }
+
         if (form.getPortName().equals("")) {
             return portDOService.findByStatus(form.getStatus());
         }

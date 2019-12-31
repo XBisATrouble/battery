@@ -40,4 +40,9 @@ public class PortDOServiceImpl extends BaseServiceImpl<PortDO,Long> implements I
     public PortDO findPortDOByPortNum(Integer portNum) {
         return portDORepository.findPortDOByPortNum(portNum);
     }
+
+    @Override
+    public PortDO findByName(String portName) {
+        return portDORepository.findPortDOByPortName(portName);
+    }
 }
