@@ -20,7 +20,8 @@ public class CleanTask{
             String[] args1 = new String[] {
                 "python",
                 //                "/home/python/tmat.py",
-                "/home/python/tmat.py",
+                //"/home/python/tmat.py",
+                    "D:\\model\\Clean\\pre.py",
                 request
             };
             Process pr = Runtime.getRuntime().exec(args1);
@@ -36,7 +37,7 @@ public class CleanTask{
         }catch (IOException e) {
             e.printStackTrace();
         } finally {
-            WebSocket.sendTextMessage(shopId, "数据预处理完成");
+            WebSocket.sendTextMessage(shopId, "清洗任务完成");
         }
     }
 }

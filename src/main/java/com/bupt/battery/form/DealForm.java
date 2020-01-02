@@ -11,5 +11,5 @@ public class DealForm implements Serializable {
     public String area;
     //public String code;
     public String shopId;
-    public List<String> dealList;
+    //public List<String> dealList;
 }

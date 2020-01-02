@@ -361,7 +361,7 @@ public class VehicleController {
 
     @RequestMapping(path = "/deal")
     public void deal(@RequestBody DealForm form) {
-        String data = getData(form.getDealList());
+        //String data = getData(form.getDealList());
         JSONObject object = new JSONObject();
         object.put("time", form.getTime());
         object.put("area", form.getArea());

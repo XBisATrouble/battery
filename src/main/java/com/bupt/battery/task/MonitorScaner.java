@@ -32,8 +32,6 @@ public class MonitorScaner implements ApplicationRunner  {
                     if (fmt.format(monitorDO.getStartTime()).equals(fmt.format(new Date()))) {
                         monitorDO.setStatus("进行中");
                         SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
-                        //启动模型python程序
-                        new Thread(new CallMonitorThread(monitorDO.getPortId().toString(), monitorDO.getModelId().intValue())).start();
                     } else if (fmt.format(monitorDO.getEndTime()).equals(fmt.format(new Date()))) {
                         monitorDO.setStatus("已完成");
                         SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
