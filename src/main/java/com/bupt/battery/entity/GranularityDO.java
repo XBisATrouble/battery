@@ -13,6 +13,5 @@ import lombok.Data;
 public class GranularityDO extends BaseEntity<Long> {
     private String time;
     private String area;
-
     private String type;
 }

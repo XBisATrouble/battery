@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IGranularityDORepository extends BaseRepository<GranularityDO,Long>, JpaSpecificationExecutor<GranularityDO> {
-
+    GranularityDO getGranularityDOByAreaAndTimeAndType(String area,String time,String type);
 }

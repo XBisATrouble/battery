@@ -10,6 +10,7 @@ import com.bupt.battery.entity.DataManagementDO;
 import com.bupt.battery.entity.GranularityDO;
 import com.bupt.battery.entity.TaskDO;
 import com.bupt.battery.entity.VehicleDO;
+import com.bupt.battery.entity.baseEntity.ResponseResult;
 import com.bupt.battery.form.DealForm;
 import com.bupt.battery.form.GranularityForm;
 import com.bupt.battery.form.VehicleForm;
@@ -88,100 +89,150 @@ public class VehicleController {
         System.out.println(form);
         return vehicleDOService.findVehicleDOPage(form);
     }
+
     @RequestMapping(path = "/getVehicle")
-    public VehicleDO getVehicle(@RequestBody VehicleSaveForm form)
-    {
-        VehicleDO vehicleDO=vehicleDOService.getOne(form.getId());
-        vehicleDO.setGroupMode(vehicleDO.getGroupMode().substring(vehicleDO.getGroupMode().indexOf("_")+1));
-        vehicleDO.setVehicleVersion(vehicleDO.getVehicleVersion().substring(vehicleDO.getVehicleVersion().indexOf("_")+1));
-        vehicleDO.setBoxPosition(vehicleDO.getBoxPosition().substring(vehicleDO.getBoxPosition().indexOf("_")+1));
+    public VehicleDO getVehicle(@RequestBody VehicleSaveForm form) {
+        VehicleDO vehicleDO = vehicleDOService.getOne(form.getId());
+        vehicleDO.setGroupMode(vehicleDO.getGroupMode().substring(vehicleDO.getGroupMode().indexOf("_") + 1));
+        vehicleDO.setVehicleVersion(vehicleDO.getVehicleVersion().substring(vehicleDO.getVehicleVersion().indexOf("_") + 1));
+        vehicleDO.setBoxPosition(vehicleDO.getBoxPosition().substring(vehicleDO.getBoxPosition().indexOf("_") + 1));
 
         return vehicleDO;
     }
 
     @RequestMapping(path = "/upload")
-    public FileAO upload(HttpServletRequest request,@RequestParam(value = "file1",required = false)MultipartFile file1,@RequestParam(value = "file2",required = false)MultipartFile file2,@RequestParam(value = "file3",required = false)MultipartFile file3) throws Exception{
-        String groupMode="";
-        if(file1!=null)
-        {
-            groupMode=uploadFile(file1);
+    public FileAO upload(HttpServletRequest request, @RequestParam(value = "file1", required = false) MultipartFile file1, @RequestParam(value = "file2", required = false) MultipartFile file2,
+        @RequestParam(value = "file3", required = false) MultipartFile file3) throws Exception {
+        String groupMode = "undefined";
+        if (file1 != null) {
+            groupMode = uploadFile(file1);
         }
-        String version="";
-        if(file2!=null)
-        {
-            version=uploadFile(file2);
+        String version = "undefined";
+        if (file2 != null) {
+            version = uploadFile(file2);
         }
-        String bosPosition="";
-        if(file3!=null)
-        {
-            bosPosition=uploadFile(file3);
+        String bosPosition = "undefined";
+        if (file3 != null) {
+            bosPosition = uploadFile(file3);
         }
-        VehicleDO vehicleDO=new VehicleDO();
-        String amountString=request.getParameter("amount").trim().equals("undefined")?"0":request.getParameter("amount").trim();
+        System.out.println(request.getParameter("amount"));
+        System.out.println(request.getParameter("vehicleId"));
+        System.out.println(request.getParameter("carmaker"));
+        System.out.println(request.getParameter("orderNumber"));
+        System.out.println(request.getParameter("drivingArea"));
+        System.out.println(request.getParameter("vehicleUsage"));
+
+        VehicleDO vehicleDO = new VehicleDO();
+        String amountString = request.getParameter("amount").trim().equals("undefined") ? "0" : request.getParameter("amount").trim();
         vehicleDO.setAmount(Integer.valueOf(amountString));
-        vehicleDO.setVehicleId(Integer.valueOf(request.getParameter("vehicleId").trim()));
+        String vehicleString = request.getParameter("vehicleId").trim().equals("undefined") ? "0" : request.getParameter("vehicleId").trim();
+        vehicleDO.setVehicleId(Integer.valueOf(vehicleString));
         vehicleDO.setCarmaker(request.getParameter("carmaker"));
         vehicleDO.setOrderNumber(request.getParameter("orderNumber"));
+//        System.out.println(request.getParameter("drivingArea"));
         vehicleDO.setDrivingArea(request.getParameter("drivingArea"));
         vehicleDO.setMode(request.getParameter("mode"));
         vehicleDO.setVehicleUsage(request.getParameter("vehicleUsage"));
         vehicleDO.setBatteryType(request.getParameter("batteryType"));
         vehicleDO.setVin(request.getParameter("vin"));
         vehicleDO.setPlateNumber(request.getParameter("plateNumber"));
-        String lengthString=request.getParameter("carLength").trim().equals("undefined")?"0":request.getParameter("carLength").trim();
+        String lengthString = request.getParameter("carLength").trim().equals("undefined") ? "0" : request.getParameter("carLength").trim();
         vehicleDO.setCarLength(Float.valueOf(lengthString));
 //        System.out.println(request.getParameter("onlineDate"));
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = format.parse(request.getParameter("onlineDate"));
+        Date date = new Date();
+
+        if (!"undefined".equals(request.getParameter("onlineDate"))) {
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            date = format.parse(request.getParameter("onlineDate"));
+        }
         vehicleDO.setOnlineDate(date);
         vehicleDO.setThermalManagement(request.getParameter("thermalManagement"));
         vehicleDO.setVehicleSystem(request.getParameter("vehicleSystem"));
         vehicleDO.setBusCompany(request.getParameter("busCompany"));
-        vehicleDO.setMileage(Integer.valueOf(request.getParameter("mileage").trim()));
+        String mileageString = request.getParameter("mileage").trim().equals("undefined") ? "0" : request.getParameter("mileage").trim();
+
+        vehicleDO.setMileage(Integer.valueOf(mileageString));
         vehicleDO.setBusRoutes(request.getParameter("busRoutes"));
         vehicleDO.setGroupMode(groupMode);
         vehicleDO.setVehicleVersion(version);
         vehicleDO.setBoxPosition(bosPosition);
         vehicleDO.setAnalysisResult("无");
         System.out.println(vehicleDO);
-        vehicleDOService.save(vehicleDO);
-        System.out.println(groupMode+"-"+version+"-"+bosPosition);
-        FileAO fileAO=new FileAO();
+        vehicleDO=vehicleDOService.save(vehicleDO);
+        System.out.println(vehicleDO);
+        if(!"undefined".equals(vehicleDO.getBatteryType())&&!"undefined".equals(vehicleDO.getDrivingArea())&&vehicleDO.getAmount()!=0)
+        {
+            System.out.println("1111111111111111111111");
+            DateFormat df = new SimpleDateFormat("yyyy-MM");
+            String time=df.format(date);
+            GranularityDO granularityDO=granularityDOService.getGranularityDOSByAreaAndTimeAndType(vehicleDO.getDrivingArea(),time,vehicleDO.getBatteryType());
+            if(granularityDO==null)
+            {
+                System.out.println(vehicleDO.getDrivingArea());
+                granularityDO=new GranularityDO();
+                granularityDO.setArea(vehicleDO.getDrivingArea());
+                granularityDO.setTime(time);
+                granularityDO.setType(vehicleDO.getBatteryType());
+                granularityDO=granularityDOService.save(granularityDO);
+            }
+            DataManagementDO dataManagementDO=dataManagementDOService.findDataManagementDOByGranId(granularityDO.getId());
+            if(dataManagementDO==null)
+            {
+                dataManagementDO=new DataManagementDO();
+                dataManagementDO.setAmount(vehicleDO.getAmount());
+                dataManagementDO.setDeal("00000000");
+                dataManagementDO.setGranId(granularityDO.getId());
+                dataManagementDO.setIsComplete(Boolean.FALSE);
+                dataManagementDOService.save(dataManagementDO);
+            }
+            else {
+                dataManagementDO.setAmount(dataManagementDO.getAmount()+vehicleDO.getAmount());
+                dataManagementDO.setDeal("00000000");
+                dataManagementDOService.update(dataManagementDO);
+            }
+        }
+        //        System.out.println(groupMode+"-"+version+"-"+bosPosition);
+        FileAO fileAO = new FileAO();
         fileAO.setUrl(groupMode);
         return fileAO;
     }
+
     @GetMapping(path = "/getFile")
-    public void getFile(@RequestParam String type,@RequestParam Long id,HttpServletResponse resp) throws IOException{
-        VehicleDO vehicleDO=vehicleDOService.getOne(id);
+    public void getFile(@RequestParam String type, @RequestParam Long id, HttpServletResponse resp) throws IOException {
+        VehicleDO vehicleDO = vehicleDOService.getOne(id);
         String path = null;
-        String name=null;
-        if (type.equals("成组方式"))
-        {
-            name=vehicleDO.getGroupMode();
+        String name = null;
+        if (type.equals("成组方式")) {
+            name = vehicleDO.getGroupMode();
+        } else if (type.equals("版本号")) {
+            name = vehicleDO.getVehicleVersion();
+        } else {
+            name = vehicleDO.getBoxPosition();
         }
-        else if(type.equals("版本号")){
-            name=vehicleDO.getVehicleVersion();
-         }
-        else {
-            name=vehicleDO.getBoxPosition();
-        }
-        path=filePath+name;
-        //String realPath = "D:" + File.separator + "apache-tomcat-8.5.15" + File.separator + "files";
-        File file = new File(path);
-        System.out.println(path);
-        if(!file.exists()){
-            throw new IOException("文件不存在");
-        }
-        //        resp.reset();
-        resp.setContentType("application/octet-stream");
-        //        resp.setContentType("application/x-png");
-        resp.setCharacterEncoding("utf-8");
-        resp.setContentLength((int) file.length());
-        resp.addHeader("Content-Disposition", "attachment;filename=" + name);
-        byte[] buff = new byte[1024];
         BufferedInputStream bis = null;
         OutputStream os = null;
         try {
+            if (StringUtils.isBlank(name)) {
+                throw new IOException("文件不存在");
+            }
+            path = filePath + name;
+            //String realPath = "D:" + File.separator + "apache-tomcat-8.5.15" + File.separator + "files";
+            File file = new File(path);
+            System.out.println(path);
+
+
+            if (!file.exists()) {
+                throw new IOException("文件不存在");
+            }
+            //        resp.reset();
+            resp.setContentType("application/octet-stream");
+            //        resp.setContentType("application/x-png");
+            resp.setCharacterEncoding("utf-8");
+            resp.setContentLength((int) file.length());
+            resp.addHeader("Content-Disposition", "attachment;filename=" + name);
+            byte[] buff = new byte[1024];
+
+
             os = resp.getOutputStream();
             bis = new BufferedInputStream(new FileInputStream(file));
             int i = 0;
@@ -190,10 +241,20 @@ public class VehicleController {
                 os.flush();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            //获取异常信息并回传给调用端
+            resp.setCharacterEncoding("UTF-8");
+            String notFileHtml = FileUtil.getNotFileHtml("model","文件找不到!");
+//            System.out.println(notFileHtml.getBytes("UTF-8").length);
+            os = resp.getOutputStream();
+            os.write(notFileHtml.getBytes("UTF-8"));
+            os.flush();
         } finally {
             try {
-                bis.close();
+                if (bis != null) {
+                    bis.close();
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -204,15 +265,24 @@ public class VehicleController {
 
     @RequestMapping(path = "/delete")
     public void delete(@RequestBody GranularityForm form) {
+        VehicleDO vehicleDO=vehicleDOService.getOne(form.getId());
+        DateFormat df=new SimpleDateFormat("yyyy-MM");
+        GranularityDO granularityDO=granularityDOService.getGranularityDOSByAreaAndTimeAndType(vehicleDO.getDrivingArea(),df.format(vehicleDO.getOnlineDate()),vehicleDO.getBatteryType());
+        if(granularityDO!=null)
+        {
+            DataManagementDO dataManagementDO=dataManagementDOService.findDataManagementDOByGranId(granularityDO.getId());
+            dataManagementDO.setAmount(dataManagementDO.getAmount()-vehicleDO.getAmount());
+            dataManagementDOService.update(dataManagementDO);
+        }
         vehicleDOService.delete(form.getId());
     }
 
     @RequestMapping(path = "/getData")
     public TableAO getData(@RequestBody GranularityForm form) {
-        Integer sum=dataManagementDOService.findAll().stream().map(dataManagementDO -> {
+        Integer sum = dataManagementDOService.findAll().stream().map(dataManagementDO -> {
             return dataManagementDO.getAmount();
         }).reduce((integer, integer2) -> {
-            return integer+integer2;
+            return integer + integer2;
         }).get();
         List<GranularityDO> granularityDOList = granularityDOService.findGranularityList(form);
         List<ChartAO> chartAOList = getChartAO(granularityDOList);
@@ -237,26 +307,26 @@ public class VehicleController {
                         list1.add(timeList.get(i));
                     }
                     Integer amount = getAmountBy(chartAOList, timeList.get(i), form.getType(), areaList.get(j));
-                    amount=amount != null ? amount : 0;
-                    list1.add(amount+"/"+String.format("%.2f", 1.0*amount/sum*100)+"%");
+                    amount = amount != null ? amount : 0;
+                    list1.add(amount + "/" + String.format("%.2f", 1.0 * amount / sum * 100) + "%");
                 }
                 listList.add(list1);
             }
         } else if (StringUtils.isNotBlank(form.getArea())) {
 
             for (int i = 0; i < timeList.size(); i++) {
-//                System.out.println("222");
+                //                System.out.println("222");
                 List<Object> list1 = new ArrayList<>();
-//                System.out.println(timeList.size());
-//                System.out.println(typeList.size());
+                //                System.out.println(timeList.size());
+                //                System.out.println(typeList.size());
                 for (int j = 0; j < typeList.size(); j++) {
-//                    System.out.println("22");
+                    //                    System.out.println("22");
                     if (j == 0) {
                         list1.add(timeList.get(i));
                     }
                     Integer amount = getAmountBy(chartAOList, timeList.get(i), typeList.get(j), form.getArea());
-                    amount=amount != null ? amount : 0;
-                    list1.add(amount+"/"+String.format("%.2f", 1.0*amount/sum*100)+"%");
+                    amount = amount != null ? amount : 0;
+                    list1.add(amount + "/" + String.format("%.2f", 1.0 * amount / sum * 100) + "%");
                 }
                 listList.add(list1);
             }
@@ -268,8 +338,8 @@ public class VehicleController {
                         list1.add(typeList.get(i));
                     }
                     Integer amount = getAmountBy(chartAOList, form.getTime(), typeList.get(i), areaList.get(j));
-                    amount=amount != null ? amount : 0;
-                    list1.add(amount+"/"+String.format("%.2f", 1.0*amount/sum*100)+"%");
+                    amount = amount != null ? amount : 0;
+                    list1.add(amount + "/" + String.format("%.2f", 1.0 * amount / sum * 100) + "%");
                 }
                 listList.add(list1);
             }
@@ -343,7 +413,7 @@ public class VehicleController {
     private Integer getAmountBy(List<ChartAO> granularityDOList, String time, String type, String area) {
         System.out.println(granularityDOList.size());
         for (int i = 0; i < granularityDOList.size(); i++) {
-//            System.out.println(i);
+            //            System.out.println(i);
             if (granularityDOList.get(i).getType().equals(type) && granularityDOList.get(i).getTime().equals(time) && granularityDOList.get(i).getArea().equals(area)) {
 
                 return granularityDOList.get(i).getAmount();
@@ -385,16 +455,15 @@ public class VehicleController {
     }
 
 
-    private String uploadFile(MultipartFile file)
-    {
+    private String uploadFile(MultipartFile file) {
         String contentType = file.getContentType(); // 图片文件类型
-        String fileName =	file.getOriginalFilename();	 // 图片名字
+        String fileName = file.getOriginalFilename();     // 图片名字
         System.out.println(contentType);
         System.out.println(fileName);
-        UUID uuid=UUID.randomUUID();
-//        String newfileName = uuid.toString()+fileName.substring(fileName.indexOf('.')); //文件重命名
+        UUID uuid = UUID.randomUUID();
+        //        String newfileName = uuid.toString()+fileName.substring(fileName.indexOf('.')); //文件重命名
         //文件存放路径
-        String newfileName = uuid.toString()+"_"+fileName;
+        String newfileName = uuid.toString() + "_" + fileName;
         try {
             FileUtil.uploadFile(file.getBytes(), filePath, newfileName);//文件处理
         } catch (Exception e) {
@@ -405,9 +474,9 @@ public class VehicleController {
         return newfileName;
     }
 
-//    public static void main(String[] args) {
-//        String s="a_b_c";
-//        System.out.println(s.substring(s.indexOf("_")+1));
-//    }
+    //    public static void main(String[] args) {
+    //        String s="a_b_c";
+    //        System.out.println(s.substring(s.indexOf("_")+1));
+    //    }
 
 }

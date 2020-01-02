@@ -10,5 +10,7 @@ import org.springframework.data.domain.Page;
 public interface IGranularityDOService extends BaseService<GranularityDO,Long> {
 
     List<GranularityDO> findGranularityList(GranularityForm form);
+
+    GranularityDO getGranularityDOSByAreaAndTimeAndType(String area,String time,String type);
 //    Page<GranularityDO> findGranularityPage(GranularityForm form);
 }

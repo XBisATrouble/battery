@@ -30,6 +30,11 @@ public class GranularityDOServiceImpl extends BaseServiceImpl<GranularityDO,Long
         return granularityDORepository.findAll(specification);
     }
 
+    @Override
+    public GranularityDO getGranularityDOSByAreaAndTimeAndType(String area, String time, String type) {
+        return granularityDORepository.getGranularityDOByAreaAndTimeAndType(area,time,type);
+    }
+
 
     public Page<GranularityDO> findGranularityPage(GranularityForm form) {
         Integer pageNum=form.getPageNum()!=null?form.getPageNum():0;
