@@ -39,14 +39,15 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping(path = "/api/monitor",method = RequestMethod.POST,produces = "application/json; charset=UTF-8")
 public class MonitorController {
     //模型监控Service
-    @Autowired
-    private IModelMonitorDOService modelMonitorDOService;
-    //监控线程池
-    @Autowired
-    private TaskThreadPoolExecutor pool;
+    private final IModelMonitorDOService modelMonitorDOService;
+    private Thread callModel;
 
     private DateFormat fmt_s = new SimpleDateFormat("HH:mm:ss");
     private DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    public MonitorController(IModelMonitorDOService modelMonitorDOService) {
+        this.modelMonitorDOService = modelMonitorDOService;
+    }
 
     //新增监控
     @RequestMapping(value = "/save")
@@ -82,16 +83,12 @@ public class MonitorController {
 
                 object.put("error_code", 200);
                 object.put("msg", "新增监控成功！");
-                break;
                 // 启用python模型
                 // TODO 这里需要改成多种模型可以适用的
-                //new Thread(new CallMonitorThread(form.getPostId())).start();
+                callModel = new Thread(new CallMonitorThread(form.getPostId(),Integer.parseInt(form.getModelId())));
+                callModel.start();
+                break;
             }
-//            } else if (Integer.parseInt(form.getPostId()) == port.getPortNum() && port.getStatus() == 1) {
-//                object.put("code", 501);
-//                object.put("msg", "该端口已被占用");
-//                break;
-//            }
         }
         return object;
     }
@@ -100,6 +97,7 @@ public class MonitorController {
     @RequestMapping(value = "/delete")
     public void deleteMonitor(@RequestBody MonitorDCform form) {
         //查找要删除的monitorid
+        callModel.interrupt();
         ModelMonitorDO monitorDO =
                 modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         modelMonitorDOService.delete(monitorDO);
@@ -151,6 +149,9 @@ public class MonitorController {
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         ErrorMsgAO msg0 = new ErrorMsgAO();
         msg0.setDataTime("");
+        msg0.setResult("");
+        String json0 = JSON.toJSONString(msg0);
+        WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json0);
         if (monitorDO.getStatus().equals("进行中")) {
             //循环查找数据库
             //System.out.print("vId:" + monitorDO.getVehicleId() + "pId:"+monitorDO.getPortId() + "mId:"+monitorDO.getModelId() + "");
