@@ -362,10 +362,10 @@ public class VehicleController {
     @RequestMapping(path = "/deal")
     public void deal(@RequestBody DealForm form) {
         //String data = getData(form.getDealList());
-        JSONObject object = new JSONObject();
-        object.put("time", form.getTime());
-        object.put("area", form.getArea());
-        object.put("type", form.getType());
+        JSONObject object = new JSONObject(true);
+        object.put("\"time\"","\""+form.time+"\"");
+        object.put("\"area\"", "\""+form.area+"\"");
+        object.put("\"type\"","\""+form.type+"\"");
         //object.put("data", data);
         CleanThread cleanThread = new CleanThread(object.toJSONString(), form.shopId);
         pool.execute(cleanThread);
