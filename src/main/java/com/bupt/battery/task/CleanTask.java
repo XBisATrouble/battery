@@ -19,7 +19,8 @@ public class CleanTask{
             System.out.println("start");
             String[] args1 = new String[] {
                     "python",
-                    "D:\\model\\Clean\\pre1.py",
+                    "/home/python/tmat.py",
+                    //"D:\\model\\Clean\\pre1.py",
                     request
             };
             Process pr = Runtime.getRuntime().exec(args1);
