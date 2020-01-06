@@ -58,7 +58,7 @@ public class WebSocket {
     }
 
     // 此为单点消息 (发送文本)
-    public static void sendTextMessage(String shopId, String message) {
+    public void sendTextMessage(String shopId, String message) {
         Session session = sessionPool.get(shopId);
         //System.out.println("---"+shopId+"--"+message);
         if (session != null) {
@@ -83,17 +83,16 @@ public class WebSocket {
         }
     }
 
-    public static synchronized int getOnlineCount() {
+    public synchronized int getOnlineCount() {
         return onlineCount;
     }
 
-    public static synchronized void addOnlineCount() {
+    private synchronized void addOnlineCount() {
         WebSocket.onlineCount++;
     }
 
-    public static synchronized void subOnlineCount() {
+    private synchronized void subOnlineCount() {
         WebSocket.onlineCount--;
     }
-
 
 }

@@ -138,11 +138,7 @@ public class MonitorController {
     @RequestMapping(value = "/realTimeMonitor")
     public void pushToWeb(@RequestBody MonitorDCform form) {
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
-        ErrorMsgAO msg0 = new ErrorMsgAO();
-        msg0.setDataTime("");
-        msg0.setResult("");
-        String json0 = JSON.toJSONString(msg0);
-        WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json0);
+        WebSocket webSocket = SpringUtil.getBean(WebSocket.class);
         if (monitorDO.getStatus().equals("进行中")) {
             //循环查找数据库
             //System.out.print("vId:" + monitorDO.getVehicleId() + "pId:"+monitorDO.getPortId() + "mId:"+monitorDO.getModelId() + "");
@@ -162,10 +158,10 @@ public class MonitorController {
                             //给前端结果（float）
                             msgAO.setResult(resultDO.getResult().toString());
                             String json = JSON.toJSONString(msgAO);
-                            if (WebSocket.getOnlineCount() != 0) {
+                            if (webSocket.getOnlineCount() != 0) {
                                 TimeUnit.MILLISECONDS.sleep(3000);
                                 System.out.println("rdy for send msg");
-                                WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
+                                webSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
                             } else {
                                 //前端实时监控关闭
                                 break;
@@ -179,7 +175,7 @@ public class MonitorController {
                         }
                     }
                 } else {
-                    if (WebSocket.getOnlineCount() == 0) {
+                    if (webSocket.getOnlineCount() == 0) {
                         break;
                     }
                 }
