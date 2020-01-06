@@ -36,7 +36,9 @@ public class CleanTask{
         }catch (IOException e) {
             e.printStackTrace();
         } finally {
-            WebSocket.sendTextMessage(shopId, "清洗任务完成");
+            WebSocket webSocket = SpringUtil.getBean(WebSocket.class);
+            webSocket.sendTextMessage(shopId, "清洗任务完成");
+            webSocket.onClose();
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.bupt.battery.task;
 
 import com.bupt.battery.config.WebSocket;
+import com.bupt.battery.util.SpringUtil;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -80,7 +81,9 @@ public class ServerTask implements Runnable {
                     String message = line.substring(separatorIndex + 1);
                     ClientHandler client = clients.get(toClient);
                     if (client != null) {
-                        WebSocket.sendTextMessage("portMsg",message);
+                        WebSocket webSocket = SpringUtil.getBean(WebSocket.class);
+                        webSocket.sendTextMessage("portMsg", "清洗任务完成");
+                        webSocket.onClose();
                         client.sendMessage(clientId, message);
                         System.out.println("发送成功");
                     }
