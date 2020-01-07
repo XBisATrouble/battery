@@ -57,7 +57,7 @@ public class MonitorController {
                 monitorDO.setStatus("已就绪");
                 monitorDO.setPortId(Long.parseLong(form.getPostId()));
                 //更新port信息
-                port.setStatus(0);
+                port.setStatus(1);
                 SpringUtil.getBean(IPortDOService.class).update(port);
                 monitorDO.setStartTime(form.getStartTime());
                 monitorDO.setEndTime(form.getEndTime());
