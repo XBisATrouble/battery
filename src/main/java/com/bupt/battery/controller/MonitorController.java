@@ -13,16 +13,22 @@ import com.bupt.battery.entity.PortDO;
 import com.bupt.battery.form.MonitorDCform;
 import com.bupt.battery.form.MonitorQueryForm;
 import com.bupt.battery.form.MonitorSaveForm;
+import com.bupt.battery.service.IModelDOService;
 import com.bupt.battery.service.IModelMonitorDOService;
 import com.bupt.battery.service.IMonitorResultDOService;
 import com.bupt.battery.service.IPortDOService;
 import com.bupt.battery.task.CallMonitorThread;
-import com.bupt.battery.task.IntMonitorThread;
 import com.bupt.battery.task.ServerTask;
+import com.bupt.battery.task.TaskThreadPoolExecutor;
 import com.bupt.battery.util.SpringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,8 +40,10 @@ import java.util.concurrent.TimeUnit;
 public class MonitorController {
     //模型监控Service
     private final IModelMonitorDOService modelMonitorDOService;
+    private Thread callModel;
 
     private DateFormat fmt_s = new SimpleDateFormat("HH:mm:ss");
+    private DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public MonitorController(IModelMonitorDOService modelMonitorDOService) {
         this.modelMonitorDOService = modelMonitorDOService;
@@ -67,17 +75,17 @@ public class MonitorController {
 
                 // 多线程启用端口，端口号来自表单中的PostID
                 try {
-                    // 启用服务器sever
                     ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
                     new Thread(new ServerTask(server)).start();
-                    // 启用python模型
-                    new Thread(new CallMonitorThread(form.getPostId(),Integer.parseInt(form.getModelId()))).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 object.put("error_code", 200);
                 object.put("msg", "新增监控成功！");
+                // 启用python模型
+                // TODO 这里需要改成多种模型可以适用的
+                new Thread(new CallMonitorThread(form.getPostId(),Integer.parseInt(form.getModelId()))).start();
                 break;
             }
         }
@@ -88,10 +96,10 @@ public class MonitorController {
     @RequestMapping(value = "/delete")
     public void deleteMonitor(@RequestBody MonitorDCform form) {
         //查找要删除的monitorid
+        //callModel.interrupt();
         ModelMonitorDO monitorDO =
                 modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         modelMonitorDOService.delete(monitorDO);
-        // 同时清理无用model
     }
 
     //查找监控任务
@@ -138,7 +146,11 @@ public class MonitorController {
     @RequestMapping(value = "/realTimeMonitor")
     public void pushToWeb(@RequestBody MonitorDCform form) {
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
-        WebSocket webSocket = SpringUtil.getBean(WebSocket.class);
+        ErrorMsgAO msg0 = new ErrorMsgAO();
+        msg0.setDataTime("");
+        msg0.setResult("");
+        String json0 = JSON.toJSONString(msg0);
+        WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json0);
         if (monitorDO.getStatus().equals("进行中")) {
             //循环查找数据库
             //System.out.print("vId:" + monitorDO.getVehicleId() + "pId:"+monitorDO.getPortId() + "mId:"+monitorDO.getModelId() + "");
@@ -158,10 +170,10 @@ public class MonitorController {
                             //给前端结果（float）
                             msgAO.setResult(resultDO.getResult().toString());
                             String json = JSON.toJSONString(msgAO);
-                            if (webSocket.getOnlineCount() != 0) {
+                            if (WebSocket.getOnlineCount() != 0) {
                                 TimeUnit.MILLISECONDS.sleep(3000);
                                 System.out.println("rdy for send msg");
-                                webSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
+                                WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
                             } else {
                                 //前端实时监控关闭
                                 break;
@@ -175,7 +187,7 @@ public class MonitorController {
                         }
                     }
                 } else {
-                    if (webSocket.getOnlineCount() == 0) {
+                    if (WebSocket.getOnlineCount() == 0) {
                         break;
                     }
                 }
