@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface IDrivingLogDOService extends BaseService<DrivingLogDO,Long> {
     List<DrivingLogDO> findDrivingLogDOSByVehicleIdAndTimeBetween(Integer vehicleId, Date startTime,Date endTime);
+    List<DrivingLogDO> findDrivingLogDOSByVehicleId(Integer vehicleId);
 }

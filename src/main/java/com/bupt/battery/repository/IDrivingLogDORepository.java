@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface IDrivingLogDORepository extends BaseRepository<DrivingLogDO,Long>{
 
     List<DrivingLogDO> findDrivingLogDOSByVehicleIdAndTimeBetween(Integer vehicleId, Date startTime,Date endTime);
+
+    List<DrivingLogDO> findDrivingLogDOSByVehicleId(Integer vehicleId);
 }

@@ -21,7 +21,7 @@ public class CleanTask{
                 "python",
                 //                "/home/python/tmat.py",
                 //"/home/python/tmat.py",
-                    "D:\\model\\Clean\\pre.py",
+                    "/home/python/pre.py",
                 request
             };
             Process pr = Runtime.getRuntime().exec(args1);

@@ -29,10 +29,18 @@ public class VehicleDOServiceImpl extends BaseServiceImpl<VehicleDO,Long> implem
     public List<VehicleDO> findVehicleDOS(String drivingArea, String batteryType, Date startDate, Date endDate) {
         return vehicleDORepository.findVehicleDOSByDrivingAreaAndBatteryTypeAndOnlineDateBetween(drivingArea,batteryType,startDate,endDate);
     }
+    @Override
     public List<VehicleDO> findVehicleDOList(GranularityForm form) {
         Specification<VehicleDO> specification = getSpe(form);
         return vehicleDORepository.findAll(specification);
     }
+
+    @Override
+    public List<VehicleDO> findVehicleDOSByVehicleId(Integer vehicleId) {
+        return vehicleDORepository.findVehicleDOSByVehicleId(vehicleId);
+    }
+
+    @Override
     public Page<VehicleDO> findVehicleDOPage(GranularityForm form) {
         Integer pageNum=form.getPageNum()!=null?form.getPageNum():0;
         Integer pageSize=form.getPageSize()!=null?form.getPageSize():10;

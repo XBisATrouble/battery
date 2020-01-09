@@ -12,4 +12,6 @@ public interface IVehicleDOService extends BaseService<VehicleDO,Long> {
 
     Page<VehicleDO> findVehicleDOPage(GranularityForm form);
     List<VehicleDO> findVehicleDOList(GranularityForm form);
+
+    List<VehicleDO> findVehicleDOSByVehicleId(Integer vehicleId);
 }
