@@ -17,8 +17,9 @@ public class IntMonitorThread implements Runnable {
     @Override
     public void run() {
         try {
-            String command = "python D:\\Workshop\\untitled4\\interrupt.py " + port;
+            //String command = "python D:\\Workshop\\untitled4\\interrupt.py " + port;
             //String command = "python /home/python/Model" + modelId + ".py " + port;
+            String command = "python /home/python/interrupt.py " + port;
             System.out.println(command);
             proc = Runtime.getRuntime().exec(command);
         } catch (Exception e) {
