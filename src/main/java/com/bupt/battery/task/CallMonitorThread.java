@@ -19,6 +19,7 @@ public class CallMonitorThread implements Runnable {
         try {
             //String command = "python D:\\Workshop\\untitled4\\Model1.py " + port;
             String command = "python /home/python/Model" + modelId + ".py " + port;
+            //String command = "python D:\\model\\Model" + modelId + ".py " + port;
             System.out.println(command);
             proc = Runtime.getRuntime().exec(command);
         } catch (Exception e) {

@@ -56,6 +56,7 @@ public class MonitorController {
         object.put("error_code", 500);
         object.put("msg", "端口无效");
         ModelMonitorDO monitorDO = new ModelMonitorDO();
+
         List<PortDO> list = SpringUtil.getBean(IPortDOService.class).findAll();
         for (PortDO port : list) {
             if (Integer.parseInt(form.getPostId()) == port.getPortNum()) {
@@ -65,7 +66,7 @@ public class MonitorController {
                 monitorDO.setStatus("已就绪");
                 monitorDO.setPortId(Long.parseLong(form.getPostId()));
                 //更新port信息
-                port.setStatus(0);
+                port.setStatus(1);
                 SpringUtil.getBean(IPortDOService.class).update(port);
                 monitorDO.setStartTime(form.getStartTime());
                 monitorDO.setEndTime(form.getEndTime());
@@ -77,15 +78,14 @@ public class MonitorController {
                 try {
                     ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
                     new Thread(new ServerTask(server)).start();
+                    // 启用python模型
+                    new Thread(new CallMonitorThread(form.getPostId(),Integer.parseInt(form.getModelId()))).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 object.put("error_code", 200);
                 object.put("msg", "新增监控成功！");
-                // 启用python模型
-                // TODO 这里需要改成多种模型可以适用的
-                new Thread(new CallMonitorThread(form.getPostId(),Integer.parseInt(form.getModelId()))).start();
                 break;
             }
         }
@@ -135,6 +135,7 @@ public class MonitorController {
                 modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         MonitorCopyAO copyAO = new MonitorCopyAO();
         copyAO.setPortId(monitorDO.getPortId().toString());
+        copyAO.setVehicleId(monitorDO.getVehicleId() + "");
         List<String> timeList = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         timeList.add(dateFormat.format(monitorDO.getCreateTime()));
@@ -149,7 +150,7 @@ public class MonitorController {
         System.out.print("websocket num:" + webSocket.getOnlineCount() + "\n");
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         while (true) {
-            if (webSocket.getOnlineCount() == 1) {
+            if (webSocket.getOnlineCount() != 1) {
                 System.out.print("---websocket建立---\n");
                 break;
             }
