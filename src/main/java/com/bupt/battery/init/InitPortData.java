@@ -11,7 +11,7 @@ import java.util.List;
 
 
 /**
- * 用于初始化端口数据
+ * 用于初始化端口数据，优先级为1
  */
 @Component
 @Order(value = 1)
