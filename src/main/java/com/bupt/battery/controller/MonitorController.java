@@ -13,16 +13,22 @@ import com.bupt.battery.entity.PortDO;
 import com.bupt.battery.form.MonitorDCform;
 import com.bupt.battery.form.MonitorQueryForm;
 import com.bupt.battery.form.MonitorSaveForm;
+import com.bupt.battery.service.IModelDOService;
 import com.bupt.battery.service.IModelMonitorDOService;
 import com.bupt.battery.service.IMonitorResultDOService;
 import com.bupt.battery.service.IPortDOService;
 import com.bupt.battery.task.CallMonitorThread;
-import com.bupt.battery.task.IntMonitorThread;
 import com.bupt.battery.task.ServerTask;
+import com.bupt.battery.task.TaskThreadPoolExecutor;
 import com.bupt.battery.util.SpringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,8 +40,10 @@ import java.util.concurrent.TimeUnit;
 public class MonitorController {
     //模型监控Service
     private final IModelMonitorDOService modelMonitorDOService;
+    private Thread callModel;
 
     private DateFormat fmt_s = new SimpleDateFormat("HH:mm:ss");
+    private DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public MonitorController(IModelMonitorDOService modelMonitorDOService) {
         this.modelMonitorDOService = modelMonitorDOService;
@@ -48,6 +56,7 @@ public class MonitorController {
         object.put("error_code", 500);
         object.put("msg", "端口无效");
         ModelMonitorDO monitorDO = new ModelMonitorDO();
+
         List<PortDO> list = SpringUtil.getBean(IPortDOService.class).findAll();
         for (PortDO port : list) {
             if (Integer.parseInt(form.getPostId()) == port.getPortNum()) {
@@ -67,7 +76,6 @@ public class MonitorController {
 
                 // 多线程启用端口，端口号来自表单中的PostID
                 try {
-                    // 启用服务器sever
                     ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
                     new Thread(new ServerTask(server)).start();
                     // 启用python模型
@@ -88,10 +96,10 @@ public class MonitorController {
     @RequestMapping(value = "/delete")
     public void deleteMonitor(@RequestBody MonitorDCform form) {
         //查找要删除的monitorid
+        //callModel.interrupt();
         ModelMonitorDO monitorDO =
                 modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         modelMonitorDOService.delete(monitorDO);
-        // 同时清理无用model
     }
 
     //查找监控任务
@@ -127,6 +135,7 @@ public class MonitorController {
                 modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         MonitorCopyAO copyAO = new MonitorCopyAO();
         copyAO.setPortId(monitorDO.getPortId().toString());
+        copyAO.setVehicleId(monitorDO.getVehicleId() + "");
         List<String> timeList = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         timeList.add(dateFormat.format(monitorDO.getCreateTime()));
@@ -137,54 +146,41 @@ public class MonitorController {
 
     @RequestMapping(value = "/realTimeMonitor")
     public void pushToWeb(@RequestBody MonitorDCform form) {
+        WebSocket webSocket = SpringUtil.getBean(WebSocket.class);
+        System.out.print("websocket num:" + webSocket.getOnlineCount() + "\n");
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
-        ErrorMsgAO msg0 = new ErrorMsgAO();
-        msg0.setDataTime("");
-        msg0.setResult("");
-        String json0 = JSON.toJSONString(msg0);
-        WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json0);
-        if (monitorDO.getStatus().equals("进行中")) {
-            //循环查找数据库
-            //System.out.print("vId:" + monitorDO.getVehicleId() + "pId:"+monitorDO.getPortId() + "mId:"+monitorDO.getModelId() + "");
-            while (true) {
-                //获取新数据
-                List<MonitorResultDO> resultDOList =
-                        SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
-                                monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), 0, 0
-                        );
-                if (resultDOList.size() !=0 ) {
-                    System.out.print(resultDOList.size());
-                    for (MonitorResultDO resultDO : resultDOList) {
-                        try{
-                            ErrorMsgAO msgAO = new ErrorMsgAO();
-                            //给前端短时间戳格式
-                            msgAO.setDataTime(fmt_s.format(resultDO.getDataTime()));
-                            //给前端结果（float）
-                            msgAO.setResult(resultDO.getResult().toString());
-                            String json = JSON.toJSONString(msgAO);
-                            if (WebSocket.getOnlineCount() != 0) {
-                                TimeUnit.MILLISECONDS.sleep(3000);
-                                System.out.println("rdy for send msg");
-                                WebSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
-                            } else {
-                                //前端实时监控关闭
-                                break;
-                            }
-                            //更新数据为已读状态
-                            resultDO.setIsRead(1);
-                            SpringUtil.getBean(IMonitorResultDOService.class).update(resultDO);
+        while (true) {
+            if (webSocket.getOnlineCount() != 1) {
+                System.out.print("---websocket建立---\n");
+                break;
+            }
+        }
 
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    if (WebSocket.getOnlineCount() == 0) {
-                        break;
-                    }
+        while (true) {
+            if (webSocket.getOnlineCount() == 0) {
+                System.out.print("---websocket断开---\n");
+                break;
+            }
+            List<MonitorResultDO> resultDOList =
+                    SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
+                            monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 0
+                    );
+            if(resultDOList.size() != 0) {
+                for (MonitorResultDO resultDO : resultDOList) {
+                    ErrorMsgAO msgAO = new ErrorMsgAO();
+                    //给前端短时间戳格式
+                    msgAO.setDataTime(fmt_s.format(resultDO.getDataTime()));
+                    //给前端结果（float）
+                    msgAO.setResult(resultDO.getResult().toString());
+                    String json = JSON.toJSONString(msgAO);
+                    webSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
+                    //更新数据为已读状态
+                    resultDO.setIsRead(1);
+                    SpringUtil.getBean(IMonitorResultDOService.class).update(resultDO);
                 }
             }
         }
+        System.out.print("---close page---\n");
     }
 
     @RequestMapping(value = "/playBackMonitor")

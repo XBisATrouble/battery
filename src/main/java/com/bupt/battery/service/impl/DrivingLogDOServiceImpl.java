@@ -16,4 +16,9 @@ public class DrivingLogDOServiceImpl extends BaseServiceImpl<DrivingLogDO,Long> 
     public List<DrivingLogDO> findDrivingLogDOSByVehicleIdAndTimeBetween(Integer vehicleId, Date startTime, Date endTime) {
         return drivingLogDORepository.findDrivingLogDOSByVehicleIdAndTimeBetween(vehicleId,startTime,endTime);
     }
+
+    @Override
+    public List<DrivingLogDO> findDrivingLogDOSByVehicleId(Integer vehicleId) {
+        return drivingLogDORepository.findDrivingLogDOSByVehicleId(vehicleId);
+    }
 }

@@ -21,7 +21,7 @@ public class CleanTask{
                 "python",
                 //                "/home/python/tmat.py",
                 //"/home/python/tmat.py",
-                    "D:\\model\\Clean\\pre.py",
+                    "/home/python/pre.py",
                 request
             };
             Process pr = Runtime.getRuntime().exec(args1);
@@ -37,7 +37,8 @@ public class CleanTask{
         }catch (IOException e) {
             e.printStackTrace();
         } finally {
-            WebSocket.sendTextMessage(shopId, "清洗任务完成");
+            WebSocket webSocket = SpringUtil.getBean(WebSocket.class);
+            webSocket.sendTextMessage(shopId, "清洗任务完成");
         }
     }
 }

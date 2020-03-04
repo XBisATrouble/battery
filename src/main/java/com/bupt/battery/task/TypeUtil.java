@@ -22,7 +22,7 @@ public class TypeUtil {
     private WebSocket webSocket;
 
     public void run(ThreadForm form){
-//        System.out.println(form);
+        System.out.println(form);
 //        webSocket.sendTextMessage(form.getShopId(),form.getTaskDO().getTaskName()+"任务执行完毕");
         try {
             System.out.println("start");
@@ -86,7 +86,6 @@ public class TypeUtil {
 //                taskDO.setResult("失败");
             }
             SpringUtil.getBean(ITaskDOService.class).update(taskDO);
-            webSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
 
         }catch (IOException e) {
 //            e.printStackTrace();
@@ -95,7 +94,9 @@ public class TypeUtil {
             //                taskDO.setResultType(0);
             taskDO.setReason("系统异常，请联系管理员!");
             SpringUtil.getBean(ITaskDOService.class).update(taskDO);
+        }finally {
             webSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
+
         }
 
     }
