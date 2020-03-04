@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component
-@Order(value = 1)
+@Order(value = 2)
 public class MonitorScaner implements ApplicationRunner  {
     private DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
