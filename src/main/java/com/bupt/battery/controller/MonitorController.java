@@ -53,40 +53,66 @@ public class MonitorController {
     @RequestMapping(value = "/save")
     public JSONObject saveMonitor(@RequestBody MonitorSaveForm form) {
         JSONObject object = new JSONObject();
-        object.put("error_code", 500);
-        object.put("msg", "端口无效");
+        //返回错误信息
+        int port_error_code = 1;
+        int time_error_code = 0;
+        object.put("error_code", 0);
+        object.put("msg", "");
         ModelMonitorDO monitorDO = new ModelMonitorDO();
-
         List<PortDO> list = SpringUtil.getBean(IPortDOService.class).findAll();
+        //检查端口号
         for (PortDO port : list) {
             if (Integer.parseInt(form.getPostId()) == port.getPortNum()) {
-                monitorDO.setModelId(Long.parseLong(form.getModelId()));
-                monitorDO.setCreator(form.getCreator());
-                monitorDO.setCreateTime(new Timestamp(System.currentTimeMillis()));
-                monitorDO.setStatus("已就绪");
-                monitorDO.setPortId(Long.parseLong(form.getPostId()));
+                port_error_code = 0;
                 //更新port信息
                 port.setStatus(1);
                 SpringUtil.getBean(IPortDOService.class).update(port);
-                monitorDO.setStartTime(form.getStartTime());
-                monitorDO.setEndTime(form.getEndTime());
-                monitorDO.setVehicleId(Integer.parseInt(form.getVehicleId()));
-                //save to base
-                monitorDO = modelMonitorDOService.save(monitorDO);
+            }
+        }
+        //检查开始结束时间插是否超过1min
+        long sec_betw = (form.getEndTime().getTime() - form.getStartTime().getTime())/1000;
+        if (fmt.format(form.getStartTime()).compareTo(fmt.format(new Date())) < 0) {
+            time_error_code = 3;
+        } else if (sec_betw < 60) {
+            time_error_code = 2;
+        }
 
-                // 多线程启用端口，端口号来自表单中的PostID
-                try {
-                    ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
-                    new Thread(new ServerTask(server)).start();
-                    // 启用python模型
-                    new Thread(new CallMonitorThread(form.getPostId(),Integer.parseInt(form.getModelId()))).start();
-                } catch (IOException e) {
-                    e.printStackTrace();
+        if (time_error_code == 0 && port_error_code == 0) {
+            monitorDO.setModelId(Long.parseLong(form.getModelId()));
+            monitorDO.setCreator(form.getCreator());
+            monitorDO.setCreateTime(new Timestamp(System.currentTimeMillis()));
+            monitorDO.setStatus("已就绪");
+            monitorDO.setPortId(Long.parseLong(form.getPostId()));
+            monitorDO.setStartTime(form.getStartTime());
+            monitorDO.setEndTime(form.getEndTime());
+            monitorDO.setVehicleId(Integer.parseInt(form.getVehicleId()));
+            //save to base
+            monitorDO = modelMonitorDOService.save(monitorDO);
+
+            // 多线程启用端口，端口号来自表单中的PostID
+            try {
+                ServerSocket server = new ServerSocket(Integer.parseInt(form.getPostId()));
+                new Thread(new ServerTask(server)).start();
+                // 启用python模型
+                new Thread(new CallMonitorThread(form.getPostId(),Integer.parseInt(form.getModelId()))).start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            object.put("error_code", 0);
+            object.put("msg", "新增监控成功！");
+        } else {
+            if (port_error_code == 1) {
+                object.put("error_code", 1);
+                object.put("msg", "端口不存在");
+            } else {
+                if (time_error_code == 2) {
+                    object.put("error_code", 2);
+                    object.put("msg", "开始结束时间间隔至少大于1min");
+                } else {
+                    object.put("error_code", 3);
+                    object.put("msg", "开始时间不能于系统时间之前");
                 }
-
-                object.put("error_code", 200);
-                object.put("msg", "新增监控成功！");
-                break;
             }
         }
         return object;
@@ -150,7 +176,7 @@ public class MonitorController {
         System.out.print("websocket num:" + webSocket.getOnlineCount() + "\n");
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
         while (true) {
-            if (webSocket.getOnlineCount() != 1) {
+            if (webSocket.getOnlineCount() != 0) {
                 System.out.print("---websocket建立---\n");
                 break;
             }
