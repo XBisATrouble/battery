@@ -6,13 +6,17 @@ import com.bupt.battery.AO.ParamListAO;
 import com.bupt.battery.Enum.StatusType;
 import com.bupt.battery.Enum.TaskType;
 import com.bupt.battery.config.WebSocket;
+import com.bupt.battery.entity.DrivingLogDO;
 import com.bupt.battery.entity.TaskDO;
 import com.bupt.battery.entity.TaskTypeDO;
+import com.bupt.battery.entity.VehicleDO;
 import com.bupt.battery.form.TaskQueryForm;
 import com.bupt.battery.form.TaskSaveForm;
 import com.bupt.battery.form.ThreadForm;
+import com.bupt.battery.service.IDrivingLogDOService;
 import com.bupt.battery.service.ITaskDOService;
 import com.bupt.battery.service.ITaskTypeDOService;
+import com.bupt.battery.service.IVehicleDOService;
 import com.bupt.battery.task.TaskThread;
 import com.bupt.battery.task.TaskThreadPoolExecutor;
 import com.bupt.battery.util.EnumUtil;
@@ -28,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +55,11 @@ public class TaskController {
     @Autowired
     private ITaskTypeDOService taskTypeDOService;
     @Autowired
+    private IDrivingLogDOService drivingLogDOService;
+    @Autowired
     private TaskThreadPoolExecutor pool;
+    @Autowired
+    private IVehicleDOService vehicleDOService;
     @Autowired
     private WebSocket webSocket;
     @Value("${picFile.url}")
@@ -127,11 +136,20 @@ public class TaskController {
     public void run(@RequestBody TaskQueryForm form)
     {
         System.out.println(form);
-
 //        webSocket.sendTextMessage(form.getShopId(),"任务执行完毕");
         TaskDO taskDO=taskDOService.getOne(form.getTaskId());
         TaskTypeDO taskTypeDO=taskTypeDOService.getOne(taskDO.getType());
-
+        String[] paramValue=taskDO.getParamValue().split("\\|");
+        Integer vehicleId=Integer.valueOf(paramValue[paramValue.length-1]);
+        List<DrivingLogDO> drivingLogDOS=drivingLogDOService.findDrivingLogDOSByVehicleId(vehicleId);
+        if(drivingLogDOS.size()<1)
+        {
+            taskDO.setStatus("失败");
+            taskDO.setReason(String.format("没有车辆编号%s的数据!",vehicleId));
+            taskDOService.update(taskDO);
+            webSocket.sendTextMessage(form.getShopId(),"任务执行完毕！");
+            return;
+        }
         String taskRequest=getTaskRequest(taskDO,taskTypeDO.getParamNameCode());
         TaskType taskType=EnumUtil.getTaskType(taskDO.getType().intValue());
         String name=taskType.name();
@@ -276,33 +294,70 @@ public class TaskController {
         taskDOService.delete(form.getTaskId());
     }
     @GetMapping(value="/download")
-    public void download(@RequestParam String type,@RequestParam Long taskId, HttpServletResponse resp) throws IOException
+    public void download(@RequestParam String type,@RequestParam Long taskId, HttpServletRequest request,HttpServletResponse resp) throws IOException
     {
         TaskDO taskDO=taskDOService.getOne(taskId);
         String path = null;
-        String name=null;
+        String fileName=null;
         if (type.equals("csv"))
         {
-            name=taskDO.getCsvResult();
-            path=csvFile+name;
+            fileName=taskDO.getCsvResult();
+            path=csvFile+fileName;
         }
         else {
-            name=taskDO.getPicResult();
-            path=picFile+name;
+            fileName=taskDO.getPicResult();
+            path=picFile+fileName;
         }
 //        path="F:\\版本号.png";
         //String realPath = "D:" + File.separator + "apache-tomcat-8.5.15" + File.separator + "files";
         File file = new File(path);
         System.out.println(path);
+        System.out.println("name=="+fileName);
         if(!file.exists()){
             throw new IOException("文件不存在");
         }
 //        resp.reset();
         resp.setContentType("application/octet-stream");
 //        resp.setContentType("application/x-png");
-        resp.setCharacterEncoding("utf-8");
+//        resp.setCharacterEncoding("utf-8");
         resp.setContentLength((int) file.length());
-        resp.addHeader("Content-Disposition", "attachment;filename=" + name);
+//        resp.addHeader("Content-Disposition", "attachment;filename=" + name);
+
+//        resp.addHeader("content-disposition",
+//            "attachment;filename*=UTF-8''" + URLEncoder.encode(name, "UTF-8"));
+        String browser="";
+        try {
+            browser = request.getHeader("User-Agent");
+            if (-1 < browser.indexOf("MSIE 6.0") || -1 < browser.indexOf("MSIE 7.0")) {
+                // IE6, IE7 浏览器
+                resp.addHeader("content-disposition", "attachment;filename="
+                    + new String(fileName.getBytes(), "ISO8859-1"));
+            } else if (-1 < browser.indexOf("MSIE 8.0")) {
+                // IE8
+                resp.addHeader("content-disposition", "attachment;filename="
+                    + URLEncoder.encode(fileName, "UTF-8"));
+            } else if (-1 < browser.indexOf("MSIE 9.0")) {
+                // IE9
+                resp.addHeader("content-disposition", "attachment;filename="
+                    + URLEncoder.encode(fileName, "UTF-8"));
+            } else if (-1 < browser.indexOf("Chrome")) {
+                // 谷歌
+                resp.addHeader("content-disposition",
+                    "attachment;filename*=UTF-8''" + URLEncoder.encode(fileName, "UTF-8"));
+            } else if (-1 < browser.indexOf("Safari")) {
+                // 苹果
+                resp.addHeader("content-disposition", "attachment;filename="
+                    + new String(fileName.getBytes(), "ISO8859-1"));
+            } else {
+                // 火狐或者其他的浏览器
+                resp.addHeader("content-disposition",
+                    "attachment;filename*=UTF-8''" + URLEncoder.encode(fileName, "UTF-8"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
         byte[] buff = new byte[1024];
         BufferedInputStream bis = null;
         OutputStream os = null;
