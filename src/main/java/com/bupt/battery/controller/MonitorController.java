@@ -13,27 +13,19 @@ import com.bupt.battery.entity.PortDO;
 import com.bupt.battery.form.MonitorDCform;
 import com.bupt.battery.form.MonitorQueryForm;
 import com.bupt.battery.form.MonitorSaveForm;
-import com.bupt.battery.service.IModelDOService;
 import com.bupt.battery.service.IModelMonitorDOService;
 import com.bupt.battery.service.IMonitorResultDOService;
 import com.bupt.battery.service.IPortDOService;
 import com.bupt.battery.task.CallMonitorThread;
 import com.bupt.battery.task.ServerTask;
-import com.bupt.battery.task.TaskThreadPoolExecutor;
 import com.bupt.battery.util.SpringUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping(path = "/api/monitor",method = RequestMethod.POST,produces = "application/json; charset=UTF-8")
