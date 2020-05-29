@@ -19,6 +19,17 @@ public class FileUtil {
         out.close();
     }
 
+    public static void deleteFile(File file) {
+        try {
+            if (file.isFile()) {
+                // 删除符合条件的文件
+                file.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static String getNotFileHtml(String fileName,String message){
         StringBuffer sb = new StringBuffer();
         sb.append("<html>");

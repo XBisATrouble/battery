@@ -7,6 +7,8 @@ public class MyException extends Exception {
         this.errCode = errCode;
     }
 
+
+
     public MyException(String message, String errCode) {
         super(message);
         this.errCode = errCode;

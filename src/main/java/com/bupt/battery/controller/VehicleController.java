@@ -2,65 +2,51 @@ package com.bupt.battery.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bupt.battery.AO.ChartAO;
-import com.bupt.battery.AO.FileAO;
 import com.bupt.battery.AO.TableAO;
-import com.bupt.battery.Enum.AreaType;
-import com.bupt.battery.config.WebSocket;
 import com.bupt.battery.entity.DataManagementDO;
 import com.bupt.battery.entity.GranularityDO;
-import com.bupt.battery.entity.TaskDO;
+import com.bupt.battery.entity.ResourceDO;
 import com.bupt.battery.entity.VehicleDO;
-import com.bupt.battery.entity.baseEntity.ResponseResult;
 import com.bupt.battery.form.DealForm;
 import com.bupt.battery.form.GranularityForm;
-import com.bupt.battery.form.VehicleForm;
+import com.bupt.battery.form.ResourceForm;
 import com.bupt.battery.form.VehicleSaveForm;
-import com.bupt.battery.repository.IDataManagementDORepository;
 import com.bupt.battery.service.IDataManagementDOService;
 import com.bupt.battery.service.IGranularityDOService;
+import com.bupt.battery.service.IResourceDOService;
 import com.bupt.battery.service.IVehicleDOService;
-import com.bupt.battery.task.CleanTask;
 import com.bupt.battery.task.CleanThread;
 import com.bupt.battery.task.TaskThreadPoolExecutor;
 import com.bupt.battery.util.DateUtil;
-import com.bupt.battery.util.EnumUtil;
 import com.bupt.battery.util.ExportExcel;
 import com.bupt.battery.util.FileUtil;
-import com.bupt.battery.util.Student;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import schemasMicrosoftComVml.STExt.Enum;
 
 @RestController
 @RequestMapping(path = "/api/vehicle", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -73,9 +59,22 @@ public class VehicleController {
     private IDataManagementDOService dataManagementDOService;
     @Autowired
     private TaskThreadPoolExecutor pool;
+    @Autowired
+    private IResourceDOService resourceDOService;
 
     @Value("${vehicleFile.url}")
     private String filePath;
+    @Value("${resource.base}")
+    private String resourceBaseUrl;
+
+
+    @RequestMapping(path = "/resource")
+    public List<String> queryResourceList(@RequestBody ResourceForm form)
+    {
+//        System.out.println(form.toString());
+        String type=form.getType()==null?" ":form.getType();
+        return resourceDOService.findResoureDOByType(type).stream().map(ResourceDO::getName).collect(Collectors.toList());
+    }
 
     @RequestMapping(path = "/list")
     public List<ChartAO> queryVehicleList(@RequestBody GranularityForm form) {
@@ -93,34 +92,23 @@ public class VehicleController {
     @RequestMapping(path = "/getVehicle")
     public VehicleDO getVehicle(@RequestBody VehicleSaveForm form) {
         VehicleDO vehicleDO = vehicleDOService.getOne(form.getId());
-        vehicleDO.setGroupMode(vehicleDO.getGroupMode().substring(vehicleDO.getGroupMode().indexOf("_") + 1));
-        vehicleDO.setVehicleVersion(vehicleDO.getVehicleVersion().substring(vehicleDO.getVehicleVersion().indexOf("_") + 1));
-        vehicleDO.setBoxPosition(vehicleDO.getBoxPosition().substring(vehicleDO.getBoxPosition().indexOf("_") + 1));
-
+//        vehicleDO.setGroupMode(vehicleDO.getGroupMode().substring(vehicleDO.getGroupMode().indexOf("_") + 1));
+//        vehicleDO.setVehicleVersion(vehicleDO.getVehicleVersion().substring(vehicleDO.getVehicleVersion().indexOf("_") + 1));
+//        vehicleDO.setBoxPosition(vehicleDO.getBoxPosition().substring(vehicleDO.getBoxPosition().indexOf("_") + 1));
+        vehicleDO.setGroupMode(resourceBaseUrl+resourceDOService.findResoureDOByName(vehicleDO.getGroupMode()).getUrl());
+        vehicleDO.setVehicleVersion(resourceBaseUrl+resourceDOService.findResoureDOByName(vehicleDO.getVehicleVersion()).getUrl());
+        vehicleDO.setBoxPosition(resourceBaseUrl+resourceDOService.findResoureDOByName(vehicleDO.getBoxPosition()).getUrl());
         return vehicleDO;
     }
 
     @RequestMapping(path = "/upload")
-    public FileAO upload(HttpServletRequest request, @RequestParam(value = "file1", required = false) MultipartFile file1, @RequestParam(value = "file2", required = false) MultipartFile file2,
-        @RequestParam(value = "file3", required = false) MultipartFile file3) throws Exception {
-        String groupMode = "undefined";
-        if (file1 != null) {
-            groupMode = uploadFile(file1);
-        }
-        String version = "undefined";
-        if (file2 != null) {
-            version = uploadFile(file2);
-        }
-        String bosPosition = "undefined";
-        if (file3 != null) {
-            bosPosition = uploadFile(file3);
-        }
+//    @RequestParam(value = "file1", required = false) MultipartFile file1, @RequestParam(value = "file2", required = false) MultipartFile file2,
+//    @RequestParam(value = "file3", required = false) MultipartFile file3
+    public void upload(HttpServletRequest request) throws Exception {
+
+
         System.out.println(request.getParameter("amount"));
-        System.out.println(request.getParameter("vehicleId"));
-        System.out.println(request.getParameter("carmaker"));
-        System.out.println(request.getParameter("orderNumber"));
-        System.out.println(request.getParameter("drivingArea"));
-        System.out.println(request.getParameter("vehicleUsage"));
+
 
         VehicleDO vehicleDO = new VehicleDO();
         String amountString = request.getParameter("amount").trim().equals("undefined") ? "0" : request.getParameter("amount").trim();
@@ -153,9 +141,9 @@ public class VehicleController {
 
         vehicleDO.setMileage(Integer.valueOf(mileageString));
         vehicleDO.setBusRoutes(request.getParameter("busRoutes"));
-        vehicleDO.setGroupMode(groupMode);
-        vehicleDO.setVehicleVersion(version);
-        vehicleDO.setBoxPosition(bosPosition);
+        vehicleDO.setGroupMode(request.getParameter("groupMode"));
+        vehicleDO.setVehicleVersion(request.getParameter("vehicleVersion"));
+        vehicleDO.setBoxPosition(request.getParameter("boxPosition"));
         vehicleDO.setAnalysisResult("无");
         System.out.println(vehicleDO);
         vehicleDO=vehicleDOService.save(vehicleDO);
@@ -191,10 +179,10 @@ public class VehicleController {
                 dataManagementDOService.update(dataManagementDO);
             }
         }
-        //        System.out.println(groupMode+"-"+version+"-"+bosPosition);
-        FileAO fileAO = new FileAO();
-        fileAO.setUrl(groupMode);
-        return fileAO;
+
+//        FileAO fileAO = new FileAO();
+//        fileAO.setUrl(groupMode);
+
     }
 
     @GetMapping(path = "/getFile")

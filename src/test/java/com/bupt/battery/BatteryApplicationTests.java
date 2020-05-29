@@ -1,6 +1,7 @@
 package com.bupt.battery;
 
 import com.bupt.battery.service.IDictDOService;
+import com.bupt.battery.service.IResourceDOService;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,12 +21,16 @@ public class BatteryApplicationTests {
     //    }
     @Autowired
     private IDictDOService dictDOService;
+    @Autowired
+    private IResourceDOService resourceDOService;
     @Test
     public void dictTest() {
-        String type="整车厂";
-        System.out.println(dictDOService.getData(type).stream().map(dictDO -> {
-            return dictDO.getValue();
-        }).collect(Collectors.toList()).toString());
+//        String type="整车厂";
+//        System.out.println(dictDOService.getData(type).stream().map(dictDO -> {
+//            return dictDO.getValue();
+//        }).collect(Collectors.toList()).toString());
+        String type="jpg";
+        System.out.println(resourceDOService.findResoureDOByType(type));
     }
 
 
