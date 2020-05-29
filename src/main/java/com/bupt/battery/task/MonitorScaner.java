@@ -38,11 +38,17 @@ public class MonitorScaner implements ApplicationRunner  {
                     } else if (fmt.format(monitorDO.getEndTime()).equals(fmt.format(new Date()))) {
                         monitorDO.setStatus("已完成");
                         SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
+                    } else if (fmt.format(monitorDO.getEndTime()).compareTo(fmt.format(new Date())) < 0) {
+                        if (monitorDO.getStatus().equals("已完成") || monitorDO.getStatus().equals("进行中")) {}
+                        else {
+                            monitorDO.setStatus("已失败");
+                            SpringUtil.getBean(IModelMonitorDOService.class).update(monitorDO);
+                        }
                     }
                 }
             }
-            //1s执行一次
-            TimeUnit.MILLISECONDS.sleep(10000);
+            //5s执行一次
+            TimeUnit.MILLISECONDS.sleep(5000);
         }
     }
 }
