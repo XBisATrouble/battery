@@ -18,7 +18,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Table(name = "vehicle", schema = "baas", catalog = "")
 public class VehicleDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "vehicle_id")
-    private Integer vehicleId;
+    private String vehicleId;
     @Column(name = "order_number")
     private String orderNumber;
     private String carmaker;

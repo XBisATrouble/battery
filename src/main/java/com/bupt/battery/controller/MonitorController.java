@@ -77,7 +77,8 @@ public class MonitorController {
             monitorDO.setPortId(Long.parseLong(form.getPostId()));
             monitorDO.setStartTime(form.getStartTime());
             monitorDO.setEndTime(form.getEndTime());
-            monitorDO.setVehicleId(Integer.parseInt(form.getVehicleId()));
+            // change vehicleid type to string
+            monitorDO.setVehicleId(form.getVehicleId());
             //save to base
             monitorDO = modelMonitorDOService.save(monitorDO);
 
@@ -181,7 +182,7 @@ public class MonitorController {
             }
             List<MonitorResultDO> resultDOList =
                     SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
-                            monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 0
+                            Integer.parseInt(monitorDO.getVehicleId()), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 0
                     );
             if(resultDOList.size() != 0) {
                 for (MonitorResultDO resultDO : resultDOList) {
@@ -210,7 +211,7 @@ public class MonitorController {
         if (monitorDO.getStatus().equals("已完成")) {
         List<MonitorResultDO> list = SpringUtil.getBean(IMonitorResultDOService.class).
                 findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
-                        monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 1
+                        Integer.parseInt(monitorDO.getVehicleId()), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 1
                 );
             if (list.size() > 0) {
                 for (MonitorResultDO resultDO : list) {

@@ -16,7 +16,7 @@ import lombok.Data;
 public class TemperaturePointDistributionDO extends BaseEntity<Long> {
 
     @Column(name = "vehicle_id")
-    private Integer vehicleId;
+    private String vehicleId;
     private Date date;
     @Column(name = "temp_min_time")
     private String tempMinTime;

@@ -36,7 +36,7 @@ public class VehicleDOServiceImpl extends BaseServiceImpl<VehicleDO,Long> implem
     }
 
     @Override
-    public List<VehicleDO> findVehicleDOSByVehicleId(Integer vehicleId) {
+    public List<VehicleDO> findVehicleDOSByVehicleId(String vehicleId) {
         return vehicleDORepository.findVehicleDOSByVehicleId(vehicleId);
     }
 

@@ -114,7 +114,8 @@ public class VehicleController {
         String amountString = request.getParameter("amount").trim().equals("undefined") ? "0" : request.getParameter("amount").trim();
         vehicleDO.setAmount(Integer.valueOf(amountString));
         String vehicleString = request.getParameter("vehicleId").trim().equals("undefined") ? "0" : request.getParameter("vehicleId").trim();
-        vehicleDO.setVehicleId(Integer.valueOf(vehicleString));
+        //change vehicle to string type
+        vehicleDO.setVehicleId(vehicleString);
         vehicleDO.setCarmaker(request.getParameter("carmaker"));
         vehicleDO.setOrderNumber(request.getParameter("orderNumber"));
 //        System.out.println(request.getParameter("drivingArea"));

@@ -16,7 +16,7 @@ import lombok.Data;
 @Table(name = "temperature_distribution", schema = "baas", catalog = "")
 public class TemperatureDistributionDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "vehicle_id")
-    private Integer vehicleId;
+    private String vehicleId;
     private Date date;
     private Float lower;
     private Float t022;

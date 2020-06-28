@@ -12,7 +12,7 @@ import lombok.Data;
 @Table(name = "daily_statistics")
 public class DailyStatisticsDO extends BaseEntity<Long> {
     @Column(name = "vehicle_id")
-    private Integer vehivleId;
+    private String vehivleId;
     private Date date;
     private Float throughput;
     @Column(name = "power_consumption")

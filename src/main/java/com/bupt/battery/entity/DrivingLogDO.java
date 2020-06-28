@@ -14,7 +14,7 @@ import lombok.Data;
 public class DrivingLogDO extends BaseEntity<Long> implements Serializable {
     private Long id;
     @Column(name = "vehicle_id")
-    private Integer vehicleId;
+    private String vehicleId;
     private Date time;
     private Float GPS_Speed;
     private Float GPS_Mileage;

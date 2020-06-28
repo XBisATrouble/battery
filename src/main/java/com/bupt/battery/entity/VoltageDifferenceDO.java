@@ -16,7 +16,7 @@ import lombok.Data;
 @Table(name = "voltage_difference", schema = "baas", catalog = "")
 public class VoltageDifferenceDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "vehicle_id")
-    private Integer vehicleId;
+    private String vehicleId;
     private Date date;
     private String type;
     private Float average;

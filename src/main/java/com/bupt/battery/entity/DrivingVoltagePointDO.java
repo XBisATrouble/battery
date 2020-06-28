@@ -10,7 +10,7 @@ import lombok.Data;
 @Entity
 @Table(name = "driving_voltage_point")
 public class DrivingVoltagePointDO extends BaseEntity<Long> {
-    private Integer vehicleId;
+    private String vehicleId;
     private Date time;
     private float V1;
     private float V2;
