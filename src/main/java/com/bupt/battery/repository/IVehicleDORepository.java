@@ -12,5 +12,5 @@ import org.springframework.stereotype.Repository;
 public interface IVehicleDORepository extends BaseRepository<VehicleDO,Long>, JpaSpecificationExecutor<VehicleDO> {
 
     List<VehicleDO> findVehicleDOSByDrivingAreaAndBatteryTypeAndOnlineDateBetween(String drivingArea,String batteryType, Date startDate,Date endDate);
-    List<VehicleDO> findVehicleDOSByVehicleId(Integer vehicleId);
+    List<VehicleDO> findVehicleDOSByVehicleId(String vehicleId);
 }

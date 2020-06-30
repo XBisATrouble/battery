@@ -13,12 +13,12 @@ public class DrivingLogDOServiceImpl extends BaseServiceImpl<DrivingLogDO,Long> 
     @Autowired
     IDrivingLogDORepository drivingLogDORepository;
     @Override
-    public List<DrivingLogDO> findDrivingLogDOSByVehicleIdAndTimeBetween(Integer vehicleId, Date startTime, Date endTime) {
+    public List<DrivingLogDO> findDrivingLogDOSByVehicleIdAndTimeBetween(String vehicleId, Date startTime, Date endTime) {
         return drivingLogDORepository.findDrivingLogDOSByVehicleIdAndTimeBetween(vehicleId,startTime,endTime);
     }
 
     @Override
-    public List<DrivingLogDO> findDrivingLogDOSByVehicleId(Integer vehicleId) {
+    public List<DrivingLogDO> findDrivingLogDOSByVehicleId(String vehicleId) {
         return drivingLogDORepository.findDrivingLogDOSByVehicleId(vehicleId);
     }
 }

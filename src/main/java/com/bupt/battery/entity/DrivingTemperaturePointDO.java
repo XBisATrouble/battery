@@ -10,7 +10,7 @@ import lombok.Data;
 @Entity
 @Table(name = "driving_temperature_point")
 public class DrivingTemperaturePointDO extends BaseEntity<Long> {
-    private Integer vehicleId;
+    private String vehicleId;
     private Date time;
     private float T1;
     private float T2;

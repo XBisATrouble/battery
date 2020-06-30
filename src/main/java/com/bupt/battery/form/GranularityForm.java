@@ -11,7 +11,7 @@ public class GranularityForm implements Serializable {
     private Long id;
     private Integer pageNum;
     private Integer pageSize;
-    private Integer vehicleId;
+    private String vehicleId;
     private String vin;
     private String plateNumber;
     private String carmaker;

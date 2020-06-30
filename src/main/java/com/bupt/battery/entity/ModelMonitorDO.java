@@ -38,5 +38,5 @@ public class ModelMonitorDO extends BaseEntity<Long> implements Serializable {
     private Date endTime;
 
     @Column(name = "vehicle_id")
-    private int vehicleId;
+    private String vehicleId;
 }

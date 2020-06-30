@@ -10,5 +10,5 @@ import lombok.Data;
 @Table(name = "granularity_vehicle")
 public class GranularityVehicleDO extends BaseEntity<Long> {
     private Long granularityId;
-    private Integer vehicleId;
+    private String vehicleId;
 }

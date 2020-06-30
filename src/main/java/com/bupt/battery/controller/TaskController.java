@@ -140,7 +140,9 @@ public class TaskController {
         TaskDO taskDO=taskDOService.getOne(form.getTaskId());
         TaskTypeDO taskTypeDO=taskTypeDOService.getOne(taskDO.getType());
         String[] paramValue=taskDO.getParamValue().split("\\|");
-        Integer vehicleId=Integer.valueOf(paramValue[paramValue.length-1]);
+        // Integer vehicleId=Integer.valueOf(paramValue[paramValue.length-1]);
+        String vehicleId = paramValue[paramValue.length-1];
+        // change vehicleid type to String
         List<DrivingLogDO> drivingLogDOS=drivingLogDOService.findDrivingLogDOSByVehicleId(vehicleId);
         if(drivingLogDOS.size()<1)
         {

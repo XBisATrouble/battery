@@ -16,7 +16,7 @@ import lombok.Data;
 @Table(name = "charge_discharge_statistics", schema = "baas", catalog = "")
 public class ChargeDischargeStatisticsDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "vehicle_id")
-    private Integer vehicleId;
+    private String vehicleId;
     @Column(name = "is_charge")
     private String isCharge;
     @Column(name = "start_time")
