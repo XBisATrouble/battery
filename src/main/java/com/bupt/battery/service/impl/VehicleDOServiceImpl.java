@@ -55,11 +55,11 @@ public class VehicleDOServiceImpl extends BaseServiceImpl<VehicleDO,Long> implem
             @Override
             public Predicate toPredicate(Root<VehicleDO> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicateList = new ArrayList<>();
-                if(form.getVehicleId()!=null)
+                if(StringUtils.isNotBlank(form.getVehicleId()))
                 {
                     predicateList.add(criteriaBuilder.equal(root.get("vehicleId"),form.getVehicleId()));
                 }
-                if(form.getVin()!=null)
+                if(StringUtils.isNotBlank(form.getVin()))
                 {
                     predicateList.add(criteriaBuilder.like(root.get("vin"),form.getVin()+"%"));
                 }

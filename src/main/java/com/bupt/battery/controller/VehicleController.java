@@ -113,9 +113,9 @@ public class VehicleController {
         VehicleDO vehicleDO = new VehicleDO();
         String amountString = request.getParameter("amount").trim().equals("undefined") ? "0" : request.getParameter("amount").trim();
         vehicleDO.setAmount(Integer.valueOf(amountString));
-        String vehicleString = request.getParameter("vehicleId").trim().equals("undefined") ? "0" : request.getParameter("vehicleId").trim();
+        String vehicleString = request.getParameter("vehicleId");
         //change vehicle to string type
-        vehicleDO.setVehicleId(vehicleString);
+        vehicleDO.setVin(vehicleString);
         vehicleDO.setCarmaker(request.getParameter("carmaker"));
         vehicleDO.setOrderNumber(request.getParameter("orderNumber"));
 //        System.out.println(request.getParameter("drivingArea"));
@@ -123,7 +123,7 @@ public class VehicleController {
         vehicleDO.setMode(request.getParameter("mode"));
         vehicleDO.setVehicleUsage(request.getParameter("vehicleUsage"));
         vehicleDO.setBatteryType(request.getParameter("batteryType"));
-        vehicleDO.setVin(request.getParameter("vin"));
+        vehicleDO.setVehicleId(request.getParameter("vin"));
         vehicleDO.setPlateNumber(request.getParameter("plateNumber"));
         String lengthString = request.getParameter("carLength").trim().equals("undefined") ? "0" : request.getParameter("carLength").trim();
         vehicleDO.setCarLength(Float.valueOf(lengthString));
