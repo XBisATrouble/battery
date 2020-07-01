@@ -24,7 +24,7 @@ public class ModelStateTask implements BaseMonitor{
             int modelId = monitorDO.getModelId().intValue();
             int portId = monitorDO.getPortId().intValue();
             List<MonitorResultDO> resultDOList =
-                    SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndIsRead(vehicleId, modelId, portId);
+                    SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndIsRead(String.valueOf(vehicleId), modelId, portId);
             int data_size = resultDOList.size();
             if (data_size > 0 && fmt.format(monitorDO.getStartTime()).equals(fmt.format(new Date()))) {
                 //数据不为空且开始时间达到系统时间

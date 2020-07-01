@@ -11,8 +11,8 @@ import java.util.List;
 @Repository
 public interface IMonitorResultDORepository extends BaseRepository<MonitorResultDO,Long> {
     //@Lock(LockModeType.PESSIMISTIC_READ)
-    List<MonitorResultDO> findAllByVehicleIdAndPortIdAndIsRead(int vehicleId, int portId, int isRead);
-    List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelId(int vehicleId, int portId, int modelId);
-    List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelIdAndIsRead(int vehicleId, int portId, int modelId, int isRead);
+    List<MonitorResultDO> findAllByVehicleIdAndPortIdAndIsRead(String vehicleId, int portId, int isRead);
+    List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelId(String vehicleId, int portId, int modelId);
+    List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelIdAndIsRead(String vehicleId, int portId, int modelId, int isRead);
     List<MonitorResultDO> findAllByDataTimeBetween(Date start_time, Date end_time);
 }

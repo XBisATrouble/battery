@@ -16,15 +16,15 @@ public class MonitorResultDOServiceImpl extends BaseServiceImpl<MonitorResultDO,
     @Autowired
     private IMonitorResultDORepository monitorResultDORepository;
     @Override
-    public List<MonitorResultDO> findAllByVehicleIdAndPortIdAndIsRead(int vehicleId, int portId, int isRead) {
+    public List<MonitorResultDO> findAllByVehicleIdAndPortIdAndIsRead(String vehicleId, int portId, int isRead) {
         return monitorResultDORepository.findAllByVehicleIdAndPortIdAndIsRead(vehicleId, portId, isRead);
     }
     @Override
-    public List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelId(int vehicleId, int portId, int modelId) {
+    public List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelId(String vehicleId, int portId, int modelId) {
         return monitorResultDORepository.findAllByVehicleIdAndPortIdAndModelId(vehicleId, portId, modelId);
     }
     @Override
-    public List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelIdAndIsRead(int vehicleId, int portId, int modelId, int isRead) {
+    public List<MonitorResultDO> findAllByVehicleIdAndPortIdAndModelIdAndIsRead(String vehicleId, int portId, int modelId, int isRead) {
         return monitorResultDORepository.findAllByVehicleIdAndPortIdAndModelIdAndIsRead(vehicleId, portId, modelId, isRead);
     }
 
