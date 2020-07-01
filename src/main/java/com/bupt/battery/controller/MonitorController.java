@@ -182,7 +182,7 @@ public class MonitorController {
             }
             List<MonitorResultDO> resultDOList =
                     SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
-                            Integer.parseInt(monitorDO.getVehicleId()), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 0
+                            monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 0
                     );
             if(resultDOList.size() != 0) {
                 for (MonitorResultDO resultDO : resultDOList) {
@@ -211,7 +211,7 @@ public class MonitorController {
         if (monitorDO.getStatus().equals("已完成")) {
         List<MonitorResultDO> list = SpringUtil.getBean(IMonitorResultDOService.class).
                 findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
-                        Integer.parseInt(monitorDO.getVehicleId()), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 1
+                        monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 1
                 );
             if (list.size() > 0) {
                 for (MonitorResultDO resultDO : list) {

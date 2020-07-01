@@ -14,7 +14,7 @@ import java.util.Date;
 @Table(name = "monitor_result", schema = "baas", catalog = "")
 public class MonitorResultDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "vehicle_id")
-    private int vehicleId;
+    private String vehicleId;
 
     @Column(name = "data_time")
     private Date dataTime;
