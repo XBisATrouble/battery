@@ -22,4 +22,9 @@ public class ModelMonitorDOServiceImpl extends BaseServiceImpl<ModelMonitorDO,Lo
     public List<ModelMonitorDO> findAllByModelId(Long modelId) {
         return modelMonitorDORepository.findAllByModelId(modelId);
     }
+
+    @Override
+    public List<ModelMonitorDO> findAllByVehicleIdAndPortIdAndModelId(String vehicleId, Long portId, Long modelId) {
+        return modelMonitorDORepository.findAllByVehicleIdAndPortIdAndModelId(vehicleId, portId, modelId);
+    }
 }

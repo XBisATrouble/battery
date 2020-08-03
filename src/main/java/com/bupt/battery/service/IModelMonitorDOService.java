@@ -10,4 +10,6 @@ public interface IModelMonitorDOService extends BaseService<ModelMonitorDO,Long>
     ModelMonitorDO findModelMonitorDOByModelId(Long modelId);
     //
     List<ModelMonitorDO> findAllByModelId(Long modelId);
+
+    List<ModelMonitorDO> findAllByVehicleIdAndPortIdAndModelId(String vehicleId, Long portId, Long modelId);
 }
