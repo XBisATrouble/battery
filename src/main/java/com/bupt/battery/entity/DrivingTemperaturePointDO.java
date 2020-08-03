@@ -1,18 +1,20 @@
 package com.bupt.battery.entity;
 
 import com.bupt.battery.entity.baseEntity.BaseEntity;
-import java.util.Date;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import lombok.Data;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.util.Date;
+
+// 预处理后采集点温度表
 @Data
 @Entity
 @Table(name = "driving_temperature_point")
 public class DrivingTemperaturePointDO extends BaseEntity<Long> {
-    private String vehicleId;
-    private Date time;
-    private float T1;
+    private String vehicleId; // 车辆编号
+    private Date time; // 时间
+    private float T1; // 温度采集点1
     private float T2;
     private float T3;
     private float T4;

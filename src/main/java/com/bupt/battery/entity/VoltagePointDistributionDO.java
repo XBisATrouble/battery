@@ -1,16 +1,15 @@
 package com.bupt.battery.entity;
 
 import com.bupt.battery.entity.baseEntity.BaseEntity;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Objects;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Date;
+
+// 未用 （电压分布）
 @Data
 @Entity
 @Table(name = "voltage_point_distribution", schema = "baas", catalog = "")
