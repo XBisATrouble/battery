@@ -1,16 +1,15 @@
 package com.bupt.battery.entity;
 
 import com.bupt.battery.entity.baseEntity.BaseEntity;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Objects;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Date;
+
+// 未用 （电压差）
 @Data
 @Entity
 @Table(name = "voltage_difference", schema = "baas", catalog = "")
@@ -21,6 +20,6 @@ public class VoltageDifferenceDO extends BaseEntity<Long> implements Serializabl
     private String type;
     private Float average;
     @Column(name = "standard_deviation")
-    private Float standardDeviation;
+    private Float standardDeviation; // 标准偏差
 
 }

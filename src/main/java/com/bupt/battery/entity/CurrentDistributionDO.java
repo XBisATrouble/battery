@@ -1,16 +1,17 @@
 package com.bupt.battery.entity;
 
 import com.bupt.battery.entity.baseEntity.BaseEntity;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Objects;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Date;
+
+//@Data 注解的主要作用是提高代码的简洁，使用这个注解可以省去代码中大量的get()、 set()、 toString()等方法；
+
+// 未用（电流分布）
 @Data
 @Entity
 @Table(name = "current_distribution", schema = "baas", catalog = "")

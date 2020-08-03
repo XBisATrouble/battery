@@ -1,26 +1,25 @@
 package com.bupt.battery.entity;
 
 import com.bupt.battery.entity.baseEntity.BaseEntity;
-import java.io.Serializable;
-import java.util.Objects;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.io.Serializable;
+
+// 端口表
 @Data
 @Entity
 @Table(name = "port", schema = "baas", catalog = "")
 public class PortDO extends BaseEntity<Long> implements Serializable {
     @Column(name = "port_num")
-    private Integer portNum;
-    private Integer status;
+    private Integer portNum; // 端口号
+    private Integer status; // 端口状态（0正常、1异常）
     @Column(name = "port_name")
-    private String portName;
+    private String portName; // 端口名
     @Column(name = "port_description")
-    private String portDescription;
-    private String ip;
+    private String portDescription; // 端口描述
+    private String ip; // ip
 
 }

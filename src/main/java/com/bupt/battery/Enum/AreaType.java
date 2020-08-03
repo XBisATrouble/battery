@@ -1,5 +1,6 @@
 package com.bupt.battery.Enum;
 
+// 枚举中添加方法
 public enum AreaType {
     Area1("bj","北京"),Area2("sh","上海"),Area3("jn","济南"),Area4("gz","广州");
     AreaType(String name, String value) {

@@ -20,33 +20,20 @@ import com.bupt.battery.task.TaskThreadPoolExecutor;
 import com.bupt.battery.util.DateUtil;
 import com.bupt.battery.util.ExportExcel;
 import com.bupt.battery.util.FileUtil;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/api/vehicle", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -86,7 +73,9 @@ public class VehicleController {
     @RequestMapping(path = "/page")
     public Page<VehicleDO> getVehiclePage(@RequestBody GranularityForm form) {
         System.out.println(form);
-        return vehicleDOService.findVehicleDOPage(form);
+        Page<VehicleDO> page = vehicleDOService.findVehicleDOPage(form);
+        System.out.println(page.toString());
+        return page;
     }
 
     @RequestMapping(path = "/getVehicle")
@@ -102,20 +91,15 @@ public class VehicleController {
     }
 
     @RequestMapping(path = "/upload")
-//    @RequestParam(value = "file1", required = false) MultipartFile file1, @RequestParam(value = "file2", required = false) MultipartFile file2,
-//    @RequestParam(value = "file3", required = false) MultipartFile file3
     public void upload(HttpServletRequest request) throws Exception {
-
-
         System.out.println(request.getParameter("amount"));
-
 
         VehicleDO vehicleDO = new VehicleDO();
         String amountString = request.getParameter("amount").trim().equals("undefined") ? "0" : request.getParameter("amount").trim();
         vehicleDO.setAmount(Integer.valueOf(amountString));
         String vehicleString = request.getParameter("vehicleId");
         //change vehicle to string type
-        vehicleDO.setVin(vehicleString);
+        vehicleDO.setVin(request.getParameter("vin"));
         vehicleDO.setCarmaker(request.getParameter("carmaker"));
         vehicleDO.setOrderNumber(request.getParameter("orderNumber"));
 //        System.out.println(request.getParameter("drivingArea"));
@@ -123,7 +107,7 @@ public class VehicleController {
         vehicleDO.setMode(request.getParameter("mode"));
         vehicleDO.setVehicleUsage(request.getParameter("vehicleUsage"));
         vehicleDO.setBatteryType(request.getParameter("batteryType"));
-        vehicleDO.setVehicleId(request.getParameter("vin"));
+        vehicleDO.setVehicleId(vehicleString);
         vehicleDO.setPlateNumber(request.getParameter("plateNumber"));
         String lengthString = request.getParameter("carLength").trim().equals("undefined") ? "0" : request.getParameter("carLength").trim();
         vehicleDO.setCarLength(Float.valueOf(lengthString));
@@ -257,10 +241,29 @@ public class VehicleController {
         VehicleDO vehicleDO=vehicleDOService.getOne(form.getId());
         DateFormat df=new SimpleDateFormat("yyyy-MM");
         GranularityDO granularityDO=granularityDOService.getGranularityDOSByAreaAndTimeAndType(vehicleDO.getDrivingArea(),df.format(vehicleDO.getOnlineDate()),vehicleDO.getBatteryType());
+        // 删除历史遗留的数量为0的行，第一次执行即可
+//        List<GranularityDO> list = granularityDOService.findAll();
+//        for(GranularityDO g:list){
+//            System.out.println(g.getArea() + " - " + g.getTime() + " - "+ g.getType());
+//            DataManagementDO dataManagementDO=dataManagementDOService.findDataManagementDOByGranId(g.getId());
+//            if ( dataManagementDO != null ) {
+//                if ( dataManagementDO.getAmount() == 0 ){
+//                    dataManagementDOService.delete(dataManagementDO);
+//                    granularityDOService.delete(g);
+//                }
+//            }else {
+//                granularityDOService.delete(g);
+//            }
+//        }
         if(granularityDO!=null)
         {
             DataManagementDO dataManagementDO=dataManagementDOService.findDataManagementDOByGranId(granularityDO.getId());
             dataManagementDO.setAmount(dataManagementDO.getAmount()-vehicleDO.getAmount());
+            // 删除时，数量为0，需把对应的删掉
+            if ( dataManagementDO.getAmount() == 0 ){
+                dataManagementDOService.delete(dataManagementDO);
+                granularityDOService.delete(granularityDO);
+            }
             dataManagementDOService.update(dataManagementDO);
         }
         vehicleDOService.delete(form.getId());
@@ -391,10 +394,11 @@ public class VehicleController {
             //            chartAO.setTypeName(EnumUtil.getBatteryType(granularityDO.getType()).getName());
             chartAO.setType(granularityDO.getType());
             DataManagementDO dataManagementDO = dataManagementDOService.findDataManagementDOByGranId(granularityDO.getId());
-            chartAO.setAmount(dataManagementDO.getAmount());
-            chartAO.setIsComplete(dataManagementDO.getIsComplete());
-            chartAO.setDeal(dataManagementDO.getDeal());
-
+            if ( dataManagementDO != null ){
+                chartAO.setAmount(dataManagementDO.getAmount());
+                chartAO.setIsComplete(dataManagementDO.getIsComplete());
+                chartAO.setDeal(dataManagementDO.getDeal());
+            }
             return chartAO;
         }).collect(Collectors.toList());
     }
