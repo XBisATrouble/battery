@@ -55,10 +55,19 @@ public class MonitorController {
         //检查端口号
         for (PortDO port : list) {
             if (Integer.parseInt(form.getPostId()) == port.getPortNum()) {
-                port_error_code = 0;
-                //更新port信息
-                port.setStatus(1);
-                SpringUtil.getBean(IPortDOService.class).update(port);
+                List<ModelMonitorDO> list1 = modelMonitorDOService.findAllByVehicleIdAndPortIdAndModelId(
+                        form.getVehicleId(),
+                        Long.parseLong(form.getPostId()),
+                        Long.parseLong(form.getModelId())
+                );
+                if (list1.size() == 0) {
+                    port_error_code = 0;
+                    //更新port信息
+                    port.setStatus(1);
+                    SpringUtil.getBean(IPortDOService.class).update(port);
+                } else {
+                    port_error_code =2;
+                }
             }
         }
         //检查开始结束时间插是否超过1min
@@ -95,9 +104,14 @@ public class MonitorController {
             object.put("error_code", 0);
             object.put("msg", "新增监控成功！");
         } else {
-            if (port_error_code == 1) {
-                object.put("error_code", 1);
-                object.put("msg", "端口不存在");
+            if (port_error_code != 0) {
+                if (port_error_code == 1) {
+                    object.put("error_code", 1);
+                    object.put("msg", "端口不存在");
+                } else {
+                    object.put("error_code", 4);
+                    object.put("msg", "该端口已存在此车辆监控任务，尝试更换端口号");
+                }
             } else {
                 if (time_error_code == 2) {
                     object.put("error_code", 2);
