@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class MonitorDCform {
     private String monitorId;
+    private String timespot;
 }
