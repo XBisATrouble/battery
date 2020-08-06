@@ -12,12 +12,15 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
 @ServerEndpoint(value = "/api/websocket/{shopId}")
 @Component
 public class WebSocket {
     private Session session;
+    private String shopId;
 
     private static CopyOnWriteArraySet<WebSocket> webSockets =new CopyOnWriteArraySet<>();
     private static Map<String,Session> sessionPool = new HashMap<>();
@@ -26,10 +29,11 @@ public class WebSocket {
     @OnOpen
     public void onOpen(Session session, @PathParam(value="shopId")String shopId) {
         this.session = session;
+        this.shopId = shopId;
         webSockets.add(this);
         addOnlineCount();
+        System.out.println("PUT: "+ this.session);
         sessionPool.put(shopId, session);
-        System.out.println(shopId+ session);
         System.out.println("【websocket消息】有新的连接，总数为:"+webSockets.size());
     }
 
@@ -37,6 +41,8 @@ public class WebSocket {
     public void onClose() {
         subOnlineCount();
         webSockets.remove(this);
+        System.out.println("REMOVE:" + session);
+        sessionPool.remove(shopId, session);
         System.out.println("【websocket消息】连接断开，总数为:"+webSockets.size());
     }
 
@@ -63,7 +69,7 @@ public class WebSocket {
         //System.out.println("---"+shopId+"--"+message);
         if (session != null) {
             try {
-                System.out.println("---"+shopId+"--"+message);
+                // System.out.println("---"+shopId+"--"+message);
                 session.getBasicRemote().sendText(message);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -93,6 +99,10 @@ public class WebSocket {
 
     private synchronized void subOnlineCount() {
         WebSocket.onlineCount--;
+    }
+
+    public synchronized Map getSessionPool() {
+        return sessionPool;
     }
 
 }

@@ -20,6 +20,8 @@ import com.bupt.battery.task.CallMonitorThread;
 import com.bupt.battery.task.ServerTask;
 import com.bupt.battery.util.SpringUtil;
 import org.springframework.web.bind.annotation.*;
+
+import javax.websocket.Session;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.sql.Timestamp;
@@ -179,21 +181,25 @@ public class MonitorController {
 
     @RequestMapping(value = "/realTimeMonitor")
     public void pushToWeb(@RequestBody MonitorDCform form) {
+        String shopId = "realtime" + form.getMonitorId() + form.getTimespot();
+        // System.out.println(shopId);
         WebSocket webSocket = SpringUtil.getBean(WebSocket.class);
-        System.out.print("websocket num:" + webSocket.getOnlineCount() + "\n");
         ModelMonitorDO monitorDO = modelMonitorDOService.getOne(Long.parseLong(form.getMonitorId()));
+        Map pool = null;
+        Object session = null;
         while (true) {
-            if (webSocket.getOnlineCount() != 0) {
-                System.out.print("---websocket建立---\n");
+            pool = webSocket.getSessionPool();
+            session = pool.get(shopId);
+            if (pool.containsValue(session)) {
+                System.out.println("---websocket连接---");
                 break;
             }
         }
-
         while (true) {
-            if (webSocket.getOnlineCount() == 0) {
-                System.out.print("---websocket断开---\n");
+            pool = webSocket.getSessionPool();
+            if (!pool.containsKey(shopId)) {
                 break;
-            }
+            };
             List<MonitorResultDO> resultDOList =
                     SpringUtil.getBean(IMonitorResultDOService.class).findAllByVehicleIdAndPortIdAndModelIdAndIsRead(
                             monitorDO.getVehicleId(), monitorDO.getPortId().intValue(), monitorDO.getModelId().intValue(), 0
@@ -206,14 +212,14 @@ public class MonitorController {
                     //给前端结果（float）
                     msgAO.setResult(resultDO.getResult().toString());
                     String json = JSON.toJSONString(msgAO);
-                    webSocket.sendTextMessage("realtime" + monitorDO.getId(), json);
+                    webSocket.sendTextMessage(shopId, json);
                     //更新数据为已读状态
                     resultDO.setIsRead(1);
                     SpringUtil.getBean(IMonitorResultDOService.class).update(resultDO);
                 }
             }
         }
-        System.out.print("---close page---\n");
+        System.out.println("---page close---");
     }
 
     @RequestMapping(value = "/playBackMonitor")
