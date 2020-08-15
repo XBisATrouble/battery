@@ -20,4 +20,8 @@ public class TaskTypeDO extends BaseEntity<Long> {
     @Column(name = "param_type")
     private String paramType; // 任务参数类型列表（String,Date1(时间类型精确到日，2019-08-11)，Date2（时间类型精确到月，2019-08），Date3（时间类型精确到日可选多个，2019-08-11|2019-08-12|2019-08-13））
     private String remark; // 备注
+    @Column(name = "type_id") //type1
+    private String typeId;
+    @Column(name = "py_url")  //python文件地址
+    private String pyUrl;
 }
