@@ -17,10 +17,8 @@ import java.util.List;
 @RequestMapping(path = "/api/taskType",method = RequestMethod.POST,produces = "application/json; charset=UTF-8")
 public class TaskTypeController {
     private final ITaskTypeDOService taskTypeDOService;
-    @Value("${resourceFile.url}")
+    @Value("/home/python/")
     public String filePath;
-    @Value("${resource.base}")
-    private String resourceBaseUrl;
 
     public TaskTypeController(ITaskTypeDOService taskTypeDOService) {
         this.taskTypeDOService = taskTypeDOService;
@@ -34,17 +32,17 @@ public class TaskTypeController {
     }
 
     @RequestMapping(value = "/create")
-    public TaskTypeDO createTaskType(HttpServletRequest request)
+    public TaskTypeDO createTaskType(HttpServletRequest request,@RequestParam(value = "file", required = false) MultipartFile file)
     {
-        //String name=file.getOriginalFilename();
-       // System.out.println(name);
-        String paramType=request.getParameter("param_type");
-        String paramName=request.getParameter("param_name");
+        String name=file.getOriginalFilename();
+        String type = request.getParameter("type");
         String paramNameCode=request.getParameter("param_name_code");
-        System.out.println(request.getParameter("param_type"));
+        String paramName=request.getParameter("param_name");
+        String paramType=request.getParameter("param_type");
 
         TaskTypeDO taskTypeDO = new TaskTypeDO();
-        //uploadFile(file);
+        uploadFile(file);
+        taskTypeDO.setType(type);
         taskTypeDO.setParamType(paramType);
         taskTypeDO.setParamName(paramName);
         taskTypeDO.setParamNameCode(paramNameCode);
