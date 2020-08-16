@@ -25,4 +25,5 @@ public class TaskQueryForm implements Serializable {
     private String vehicleId;
     private List<ParamAO> paramAOList;
     private String shopId;
+    private Integer taskTypeId;
 }

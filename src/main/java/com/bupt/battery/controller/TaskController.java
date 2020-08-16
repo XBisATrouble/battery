@@ -72,14 +72,7 @@ public class TaskController {
     @RequestMapping(value = "/list",consumes = "application/json")
     public Page<TaskDO> queryTaskList(@RequestBody TaskQueryForm form)
     {
-//        TaskQueryForm form=new TaskQueryForm();
-        TaskType taskType=null;
-        System.out.println(form.toString());
-        if(StringUtils.isNotBlank(form.getTaskType()))
-        {
-            taskType=TaskType.valueOf(form.getTaskType());
-        }
-        return taskDOService.findTaskListByPage(form.getPageNum()-1,form.getPageSize(),form.getTaskName(),form.getStartTime(),form.getEndTime(), taskType);
+        return taskDOService.findTaskListByPage(form.getPageNum()-1,form.getPageSize(),form.getTaskName(),form.getStartTime(),form.getEndTime(), form.getTaskTypeId());
     }
     @RequestMapping(value = "/taskType")
     public List<TaskTypeDO> getTaskType()
