@@ -24,4 +24,5 @@ public class TaskSaveForm implements Serializable {
     private List<ParamAO> paramAOList;
     private Integer expired;
     private String shopId;
+    private Long TaskTypeId;
 }

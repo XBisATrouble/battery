@@ -190,7 +190,7 @@ public class TaskController {
     {
         System.out.println(form);
         String vehicles=null;
-//        TaskType taskType=TaskType.valueOf(form.getTaskType());
+
         for(int i=0;i<form.getParamAOList().size();i++)
         {
             if(form.getParamAOList().get(i).getParamName().equals("车号"))
@@ -213,8 +213,7 @@ public class TaskController {
                 taskDO.setExpired(form.getExpired());
                 //        taskDO.setStartTime(form.getStartTime());
                 //        taskDO.setEndTime(form.getEndTime());
-                TaskType taskType=TaskType.valueOf(form.getTaskType());
-                TaskTypeDO taskTypeDO=taskTypeDOService.findTaskTypeDOByType(taskType.getName());
+                TaskTypeDO taskTypeDO=taskTypeDOService.findTaskTypeDoById(form.getTaskTypeId());
                 taskDO.setType(taskTypeDO.getId());
                 taskDO.setStatus(StatusType.Ready.getName());
                 //        taskDO.setVehicleId(form.getVehicleId());
@@ -238,7 +237,7 @@ public class TaskController {
                 threadForm.setName(name);
                 threadForm.setShopId(form.getShopId());
                 threadForm.setTaskDO(taskDO);
-                threadForm.setUrl(taskType.getUrl());
+                threadForm.setUrl(taskTypeDO.getPyUrl());
                 threadForm.setTaskRequest(taskRequest);
                 TaskThread taskThread=new TaskThread(threadForm);
                 taskDO.setStatus(StatusType.Process.getName());
@@ -253,8 +252,7 @@ public class TaskController {
             taskDO.setTaskName(form.getTaskName());
             //        taskDO.setStartTime(form.getStartTime());
             //        taskDO.setEndTime(form.getEndTime());
-            TaskType taskType=TaskType.valueOf(form.getTaskType());
-            TaskTypeDO taskTypeDO=taskTypeDOService.findTaskTypeDOByType(taskType.getName());
+            TaskTypeDO taskTypeDO=taskTypeDOService.findTaskTypeDoById(form.getTaskTypeId());
             taskDO.setType(taskTypeDO.getId());
             taskDO.setStatus(StatusType.Ready.getName());
 
@@ -274,7 +272,7 @@ public class TaskController {
             threadForm.setShopId(form.getShopId());
             threadForm.setTaskDO(taskDO);
             threadForm.setTaskRequest(taskRequest);
-            threadForm.setUrl(taskType.getUrl());
+            threadForm.setUrl(taskTypeDO.getPyUrl());
             TaskThread taskThread=new TaskThread(threadForm);
             taskDO.setStatus(StatusType.Process.getName());
             taskDOService.update(taskDO);
