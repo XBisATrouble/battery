@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ITaskTypeDORepository extends BaseRepository<TaskTypeDO,Long> {
     TaskTypeDO findTaskTypeDOByType(String type);
+    TaskTypeDO findTaskTypeDOById(Long id);
 }

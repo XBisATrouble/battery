@@ -26,7 +26,7 @@ public class TaskDOServiceImpl extends BaseServiceImpl<TaskDO,Long> implements I
     @Autowired
     private ITaskDORepository taskDORepository;
     @Override
-    public Page<TaskDO> findTaskListByPage(Integer pageNum,Integer pageSize,String taskName, Date startTime,Date endTime,Integer taskTypeId)
+    public Page<TaskDO> findTaskListByPage(Integer pageNum,Integer pageSize,String taskName, Date startTime,Date endTime,Long taskTypeId)
     {   pageNum=pageNum!=null?pageNum:0;
         pageSize=pageSize!=null?pageSize:10;
         Pageable pageable= PageRequest.of(pageNum,pageSize,new Sort(Direction.DESC,"id"));

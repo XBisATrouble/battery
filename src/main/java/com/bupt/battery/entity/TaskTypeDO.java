@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 // 任务类型表
@@ -12,6 +13,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "task_type")
 public class TaskTypeDO extends BaseEntity<Long> {
+    @Id
+    private Long id;
     private String type; // 任务类型名称（1日吞吐量、2耗电量、3温度概率分布、4电流概率分布、5电压采集点分布、6温度采集点分布、7运行压差变化趋势、8静态压差变化趋势）
     @Column(name = "param_name_code")
     private String paramNameCode; // 任务参数名code列表(开始时间,结束时间, 车辆编号)

@@ -14,4 +14,9 @@ public class TaskTypeDOServiceImpl extends BaseServiceImpl<TaskTypeDO,Long> impl
     public TaskTypeDO findTaskTypeDOByType(String type) {
         return taskTypeDORepository.findTaskTypeDOByType(type);
     }
+
+    @Override
+    public TaskTypeDO findTaskTypeDoById(Long id) {
+        return taskTypeDORepository.findTaskTypeDOById(id);
+    }
 }

@@ -162,15 +162,15 @@ public class TaskController {
         pool.execute(taskThread);
     }
     @RequestMapping(value = "/getParam")
-    public ParamListAO getParamsByType(@RequestBody  TaskQueryForm form)
+    public ParamListAO getParamsByType(@RequestBody TaskQueryForm form)
     {
-        if(StringUtils.isBlank(form.getTaskType()))
+        if(form.getTaskTypeId()==null)
         {
            return null;
         }
 
-        String type=TaskType.valueOf(form.getTaskType()).getName();
-        TaskTypeDO taskTypeDO=taskTypeDOService.findTaskTypeDOByType(type);
+        System.out.println(form.getTaskTypeId());
+        TaskTypeDO taskTypeDO = taskTypeDOService.findTaskTypeDoById(form.getTaskTypeId());
         List<ParamAO> paramAOList=new ArrayList<>();
         String[] paramNames=taskTypeDO.getParamName().split(",");
         String[] paramsTypes=taskTypeDO.getParamType().split(",");
