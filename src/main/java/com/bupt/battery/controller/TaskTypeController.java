@@ -35,6 +35,7 @@ public class TaskTypeController {
     public TaskTypeDO createTaskType(HttpServletRequest request,@RequestParam(value = "file", required = false) MultipartFile file)
     {
         String name=file.getOriginalFilename();
+        System.out.println(name);
         String type = request.getParameter("type");
         String paramNameCode=request.getParameter("param_name_code");
         String paramName=request.getParameter("param_name");
@@ -46,14 +47,15 @@ public class TaskTypeController {
         taskTypeDO.setParamType(paramType);
         taskTypeDO.setParamName(paramName);
         taskTypeDO.setParamNameCode(paramNameCode);
-        taskTypeDO.setPyUrl(filePath);
+        taskTypeDO.setPyUrl(filePath+name);
         taskTypeDOService.saveAndFlush(taskTypeDO);
         return taskTypeDO;
     }
 
-    @RequestMapping(value = "/delete")
-    public void deleteTaskType(@RequestBody Long id)
+    @RequestMapping(value = "/del")
+    public void deleteTaskType(@RequestBody TaskTypeDO form)
     {
+        Long id = form.getId();
         TaskTypeDO taskTypeDO = taskTypeDOService.findTaskTypeDoById(id);
         taskTypeDOService.delete(taskTypeDO);
         String url=filePath+taskTypeDO.getPyUrl();

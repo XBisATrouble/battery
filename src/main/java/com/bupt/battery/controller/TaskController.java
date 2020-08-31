@@ -146,14 +146,12 @@ public class TaskController {
             return;
         }
         String taskRequest=getTaskRequest(taskDO,taskTypeDO.getParamNameCode());
-        TaskType taskType=EnumUtil.getTaskType(taskDO.getType().intValue());
-        String name=taskType.name();
         ThreadForm threadForm=new ThreadForm();
-        threadForm.setName(name);
+        threadForm.setName(taskTypeDO.getType());
         threadForm.setShopId(form.getShopId());
         threadForm.setTaskDO(taskDO);
         threadForm.setTaskRequest(taskRequest);
-        threadForm.setUrl(taskType.getUrl());
+        threadForm.setUrl(taskTypeDO.getPyUrl());
         TaskThread taskThread=new TaskThread(threadForm);
 
         taskDO.setStatus(StatusType.Process.getName());
@@ -232,9 +230,8 @@ public class TaskController {
                 taskDO=taskDOService.save(taskDO);
 
                 String taskRequest=getTaskRequest(taskDO,taskTypeDO.getParamNameCode());
-                String name=EnumUtil.getTaskType(taskDO.getType().intValue()).name();
                 ThreadForm threadForm=new ThreadForm();
-                threadForm.setName(name);
+                threadForm.setName(taskTypeDO.getType());
                 threadForm.setShopId(form.getShopId());
                 threadForm.setTaskDO(taskDO);
                 threadForm.setUrl(taskTypeDO.getPyUrl());
@@ -266,9 +263,8 @@ public class TaskController {
             taskDO=taskDOService.save(taskDO);
 
             String taskRequest=getTaskRequest(taskDO,taskTypeDO.getParamNameCode());
-            String name=EnumUtil.getTaskType(taskDO.getType().intValue()).name();
             ThreadForm threadForm=new ThreadForm();
-            threadForm.setName(name);
+            threadForm.setName(taskTypeDO.getType());
             threadForm.setShopId(form.getShopId());
             threadForm.setTaskDO(taskDO);
             threadForm.setTaskRequest(taskRequest);
